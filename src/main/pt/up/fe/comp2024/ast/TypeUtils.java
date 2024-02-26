@@ -7,9 +7,14 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 public class TypeUtils {
 
     private static final String INT_TYPE_NAME = "int";
+    private static final String BOOL_TYPE_NAME = "bool";
 
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
+    }
+
+    public static String getBoolTypeName() {
+        return BOOL_TYPE_NAME;
     }
 
     /**
@@ -49,6 +54,7 @@ public class TypeUtils {
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
         // TODO: Simple implementation that needs to be expanded
+        var kind = Kind.fromString(expr.getKind());
         return new Type(INT_TYPE_NAME, false);
     }
 
