@@ -18,8 +18,8 @@ INT : 'int' ;
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 
-INTEGER : [0-9] ;
-ID : [a-zA-Z]+ ;
+INTEGER : ('0'|[1-9]) [0-9]* ;
+ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*  ;
 
 WS : [ \t\n\r\f]+ -> skip ;
 
