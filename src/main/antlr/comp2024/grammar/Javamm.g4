@@ -11,10 +11,18 @@ RCURLY : '}' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
 MUL : '*' ;
+DIV : '/' ;
 ADD : '+' ;
+SUB : '-' ;
+AND : '&&' ;
+MINOR : '<';
+COM : '//';
+RCOM : '*/';
+LCOM: '/*';
 
 CLASS : 'class' ;
 INT : 'int' ;
+BOOL : 'boolean';
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 
@@ -40,7 +48,13 @@ varDecl
     ;
 
 type
-    : name= INT ;
+    : name=INT '['']'
+    | name=INT '...'
+    | name=BOOL
+    | name=INT
+    | name=ID
+    ;
+
 
 methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})?
@@ -59,8 +73,9 @@ stmt
     ;
 
 expr
-    : expr op= MUL expr #BinaryExpr //
-    | expr op= ADD expr #BinaryExpr //
+    : expr op=( MUL | DIV ) expr #BinaryExpr //
+    | expr op=( ADD | SUB ) expr #BinaryExpr //
+    | expr op=( MINOR | AND ) expr #BinaryExpr //
     | value=INTEGER #IntegerLiteral //
     | name=ID #VarRefExpr //
     ;
