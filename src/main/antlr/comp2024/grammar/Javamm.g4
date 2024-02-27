@@ -34,37 +34,33 @@ ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*  ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : (importDecl)* classDecl EOF
+    : (importDecl)* classDecl EOF #Program
     ;
 
 importDecl
-    : ‘import’ ID ( ‘.’ ID )* SEMI 
+    : ‘import’ ID ( ‘.’ ID )* SEMI #ImportDecl
     ;
 
 classDecl
-    : CLASS name=ID ('extends' ID)?
-        LCURLY
-        varDecl*
-        methodDecl*
-        RCURLY
+    : CLASS name=ID ('extends' ID)? LCURLY varDecl* methodDecl* RCURLY #ClassDecl
     ;
 
 varDecl
-    : type name=ID SEMI
+    : type name=ID SEMI #VarDecl
     ;
 
 type
-    : name=INT LBRAC RBRAC
-    | name=INT '...'
-    | name=BOOL
-    | name=INT
-    | name=ID
+    : name=INT LBRAC RBRAC #ArrayType
+    | name=INT '...' #VarargType
+    | name=BOOL #BoolType
+    | name=INT #IntType
+    | name=ID #ObjectType
     ;
 
 
 methodDecl 
-    : (PUBLIC)? type ID LPAREN ( type ID ( ',' type ID )* )? RPAREN LCURLY ( varDecl )* ( stmt )* RETURN expr ';' RCURLY #classMethod
-    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC ID RPAREN LCURLY ( varDecl )* ( stmt )* RCURLY #mainFunction
+    : (PUBLIC)? type ID LPAREN ( type ID ( ',' type ID )* )? RPAREN LCURLY ( varDecl )* ( stmt )* RETURN expr ';' RCURLY #ClassMethod
+    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC ID RPAREN LCURLY ( varDecl )* ( stmt )* RCURLY #MainFunction
     ;
 
 stmt
@@ -76,17 +72,18 @@ stmt
     ;
 
 expr
-    : '!' expr #NegExpr
+    : LPAREN expr RPAREN #PrecendentExpr
+    | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr //
     | expr op=( ADD | SUB ) expr #BinaryExpr //
     | expr op=( MINOR | AND ) expr #BinaryExpr //
     | value=INTEGER #IntegerLiteral //
+    | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | name=ID #VarRefExpr //
     | name=ID LBRAC expr RBRAC #ArrayRefExpr
     | expr '.length' #LengthExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
     | 'new' name=ID LPAREN RPAREN #NewObjExpr
-    | LPAREN expr RPAREN #PrecendentExpr
     | bool=( 'true' | 'false' ) #BoolExpr
     | 'this' #SelfExpr
     ;
