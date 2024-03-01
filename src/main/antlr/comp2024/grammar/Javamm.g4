@@ -38,19 +38,19 @@ LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : (importDecl)* classDecl EOF #Program
+    : (importDecl)* classDecl EOF #ProgramRule
     ;
 
 importDecl
-    : ‘import’ ID ( ‘.’ ID )* SEMI #ImportDecl
+    : 'import' ID ( '.' ID )* SEMI #ImportDeclRule
     ;
 
 classDecl
-    : CLASS name=ID ('extends' ID)? LCURLY varDecl* methodDecl* RCURLY #ClassDecl
+    : CLASS name=ID ('extends' ID)? LCURLY varDecl* methodDecl* RCURLY #ClassDeclRule
     ;
 
 varDecl
-    : type name=ID SEMI #VarDecl
+    : type name=ID SEMI #VarDeclRule
     ;
 
 type
@@ -59,13 +59,15 @@ type
     | name=BOOL #BoolType
     | name=INT #IntType
     | name=ID #ObjectType
+    | 'String' #StringType
     ;
 
 
-methodDecl 
+methodDecl
     : (PUBLIC)? type name=ID LPAREN ( type args+=ID ( ',' type args+=ID )* )? RPAREN LCURLY ( varDecl )* ( stmt )* RETURN expr ';' RCURLY #ClassMethod
     | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC args=ID RPAREN LCURLY ( varDecl )* ( stmt )* RCURLY #MainFunction
     ;
+
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt 
@@ -73,6 +75,7 @@ stmt
     | 'while' LPAREN expr* RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
     | RETURN expr SEMI #ReturnStmt
+    | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
 expr
@@ -80,7 +83,9 @@ expr
     | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
-    | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr 
+    | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
+    | expr '.' ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr LBRAC expr RBRAC #ArrayRefExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
     | expr '.length' #LengthExpr
