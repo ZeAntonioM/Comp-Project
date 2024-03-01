@@ -29,7 +29,7 @@ BOOL : 'boolean';
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 
-INTEGER : ('0'|[1-9]) [0-9]* ;
+INTEGER : [0] | ([1-9][0-9]*) ;
 ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*  ;
 
 COMMENT : LCOM .*? RCOM -> skip;
@@ -38,7 +38,8 @@ LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : (importDecl)* classDecl EOF #ProgramRule
+    : (importDecl)* classDecl EOF
+    | stmt + EOF
     ;
 
 importDecl
@@ -71,7 +72,7 @@ methodDecl
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt 
-    | 'if' LPAREN expr* RPAREN stmt 'else' stmt #IfElseStmt
+    | 'if' LPAREN expr* RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr* RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
     | RETURN expr SEMI #ReturnStmt
