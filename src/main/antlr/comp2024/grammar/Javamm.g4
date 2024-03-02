@@ -52,6 +52,7 @@ classDecl
 
 varDecl
     : type name=ID SEMI #VarDeclRule
+    | type name=ID EQUALS expr SEMI #VarDeclInitRule
     ;
 
 type
@@ -60,18 +61,19 @@ type
     | name=BOOL #BoolType
     | name=INT #IntType
     | name=ID #ObjectType
-    | 'String' #StringType
+    | name='String' #StringType
     ;
 
 
 methodDecl
-    : (PUBLIC)? type name=ID LPAREN ( type args+=ID ( ',' type args+=ID )* )? RPAREN LCURLY ( varDecl )* ( stmt )* RETURN expr ';' RCURLY #ClassMethod
-    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC args=ID RPAREN LCURLY ( varDecl )* ( stmt )* RCURLY #MainFunction
+    : (PUBLIC)? type name=ID LPAREN ( type args+=ID ( ',' type args+=ID )* )? RPAREN LCURLY ( stmt )* RETURN expr ';' RCURLY #ClassMethod
+    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC args=ID RPAREN LCURLY ( stmt )* RCURLY #MainFunction
     ;
 
 
 stmt
-    : expr EQUALS expr SEMI #AssignStmt 
+    : expr EQUALS expr SEMI #AssignStmt
+    | varDecl #VarDeclStmt
     | 'if' LPAREN expr* RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr* RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
