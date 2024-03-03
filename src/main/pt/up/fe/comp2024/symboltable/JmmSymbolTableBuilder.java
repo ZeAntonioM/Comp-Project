@@ -2,6 +2,7 @@ package pt.up.fe.comp2024.symboltable;
 
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.AllNodesJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
@@ -12,8 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static pt.up.fe.comp2024.ast.Kind.METHOD_DECL;
-import static pt.up.fe.comp2024.ast.Kind.VAR_DECL;
+import static pt.up.fe.comp2024.ast.Kind.*;
 
 public class JmmSymbolTableBuilder {
 
@@ -33,25 +33,41 @@ public class JmmSymbolTableBuilder {
     }
 
     private static Map<String, Type> buildReturnTypes(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
-
         Map<String, Type> map = new HashMap<>();
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), new Type(TypeUtils.getIntTypeName(), false)));
+        List<JmmNode> children = classDecl.getChildren(METHOD_DECL);
 
+        for (JmmNode method : children) {
+            JmmNode typeNode = method.getChildren(TYPE).get(0);
+            String type = typeNode.get("name");
+            boolean isArray = typeNode.get("isArray").equals("true");
+
+            map.put(method.get("name"), new Type(type, isArray));
+
+        }
         return map;
     }
 
     private static Map<String, List<Symbol>> buildParams(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
-
         Map<String, List<Symbol>> map = new HashMap<>();
 
-        var intType = new Type(TypeUtils.getIntTypeName(), false);
+        List<JmmNode> children = classDecl.getChildren(METHOD_DECL);
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), Arrays.asList(new Symbol(intType, method.getJmmChild(1).get("name")))));
+        for (JmmNode method : children) {
+            List<JmmNode> paramsTypeNodes = method.getChildren(TYPE);
+            List<String> paramsNames = method.getObjectAsList("args", String.class);
+            // remove the first element of paramsTypeNodes, which is the return type
+            paramsTypeNodes.remove(0);
+
+            for (int i = 0; i < paramsTypeNodes.size(); i++) {
+                String type = paramsTypeNodes.get(i).get("name");
+                boolean isArray = paramsTypeNodes.get(i).get("isArray").equals("true");
+
+                String name = paramsNames.get(i);
+
+                map.put(method.get("name"), Arrays.asList(new Symbol(new Type(type, isArray), name)));
+            }
+        }
 
         return map;
     }

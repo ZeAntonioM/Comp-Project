@@ -29,8 +29,9 @@ BOOL : 'boolean';
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 
-INTEGER : [0] | ([1-9][0-9]*) ;
-ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*  ;
+INTEGER : [0] | ([1-9][0-9]*);
+ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*;
+BOOLEAN: [0] | [1] | [true] | [false];
 
 COMMENT : LCOM .*? RCOM -> skip;
 LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
@@ -47,7 +48,11 @@ importDecl
     ;
 
 classDecl
-    : CLASS name=ID ('extends' ID)? LCURLY varDecl* methodDecl* RCURLY #ClassDeclRule
+    : CLASS name=ID
+        ('extends' ID)?
+        LCURLY
+            varDecl* methodDecl*
+        RCURLY #ClassDeclRule
     ;
 
 varDecl
@@ -55,19 +60,36 @@ varDecl
     | type name=ID EQUALS expr SEMI #VarDeclInitRule
     ;
 
-type
-    : name=INT LBRAC RBRAC #ArrayType
-    | name=INT '...' #VarargType
+type locals [boolean isArray=false, boolean isVararg=false]
+    : name=INT LBRAC RBRAC {$isArray=true;} #ArrayType
+    | name=INT '...' {$isVararg=true;}#VarargType
     | name=BOOL #BoolType
     | name=INT #IntType
     | name=ID #ObjectType
-    | name='String' #StringType
+    | name='String' {$isArray=true;} #StringType
     ;
 
 
-methodDecl
-    : (PUBLIC)? type name=ID LPAREN ( type args+=ID ( ',' type args+=ID )* )? RPAREN LCURLY ( stmt )* RETURN expr ';' RCURLY #ClassMethod
-    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC args=ID RPAREN LCURLY ( stmt )* RCURLY #MainFunction
+methodDecl locals [boolean isPublic=false]
+    : (PUBLIC {$isPublic=true;})?
+        type name=ID
+        LPAREN
+            ( type args+=ID ( ',' type args+=ID )* )?
+        RPAREN
+        LCURLY
+            ( stmt )*
+            RETURN expr
+            SEMI
+        RCURLY #ClassMethod
+    | (PUBLIC {$isPublic=true;})?
+        'static' 'void' 'main'
+        LPAREN
+            'String' LBRAC RBRAC
+            args=ID
+        RPAREN
+        LCURLY
+            ( stmt )*
+        RCURLY #MainFunction
     ;
 
 
@@ -97,8 +119,6 @@ expr
     | name=ID LBRAC expr RBRAC #ArrayRefExpr
     | name=ID #VarRefExpr 
     | value=INTEGER #IntegerLiteral 
-    | bool=( 'true' | 'false' ) #BoolExpr
+    | bool=BOOLEAN #BoolExpr
+    | bool=BOOLEAN #BoolExpr
     ;
-
-
-
