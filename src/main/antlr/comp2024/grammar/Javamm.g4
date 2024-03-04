@@ -29,8 +29,9 @@ BOOL : 'boolean';
 PUBLIC : 'public' ;
 RETURN : 'return' ;
 
-INTEGER : ('0'|[1-9]) [0-9]* ;
-ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*  ;
+INTEGER : [0] | ([1-9][0-9]*);
+ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*;
+BOOLEAN: [0] | [1] | [true] | [false];
 
 COMMENT : LCOM .*? RCOM -> skip;
 LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
@@ -38,41 +39,68 @@ LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    : (importDecl)* classDecl EOF #Program
+    : (importDecl)* classDecl EOF
+    | stmt + EOF
     ;
 
 importDecl
-    : ‘import’ ID ( ‘.’ ID )* SEMI #ImportDecl
+    : 'import' name+=ID ( '.' name+=ID )* SEMI #ImportDeclRule
     ;
 
 classDecl
-    : CLASS name=ID ('extends' ID)? LCURLY varDecl* methodDecl* RCURLY #ClassDecl
+    : CLASS name=ID
+        ('extends' ID)?
+        LCURLY
+            varDecl* methodDecl*
+        RCURLY #ClassDeclRule
     ;
 
 varDecl
-    : type name=ID SEMI #VarDecl
+    : type name=ID SEMI #VarDeclRule
+    | type name=ID EQUALS expr SEMI #VarDeclInitRule
     ;
 
-type
-    : name=INT LBRAC RBRAC #ArrayType
-    | name=INT '...' #VarargType
+type locals [boolean isArray=false, boolean isVararg=false]
+    : name=INT LBRAC RBRAC {$isArray=true;} #ArrayType
+    | name=INT '...' {$isVararg=true;}#VarargType
     | name=BOOL #BoolType
     | name=INT #IntType
     | name=ID #ObjectType
+    | name='String' {$isArray=true;} #StringType
     ;
 
 
-methodDecl 
-    : (PUBLIC)? type name=ID LPAREN ( type args+=ID ( ',' type args+=ID )* )? RPAREN LCURLY ( varDecl )* ( stmt )* RETURN expr ';' RCURLY #ClassMethod
-    | (PUBLIC)? 'static' 'void' 'main' LPAREN 'String' LBRAC RBRAC args=ID RPAREN LCURLY ( varDecl )* ( stmt )* RCURLY #MainFunction
+methodDecl locals [boolean isPublic=false]
+    : (PUBLIC {$isPublic=true;})?
+        type name=ID
+        LPAREN
+            ( type args+=ID ( ',' type args+=ID )* )?
+        RPAREN
+        LCURLY
+            ( stmt )*
+            RETURN expr
+            SEMI
+        RCURLY #ClassMethod
+    | (PUBLIC {$isPublic=true;})?
+        'static void main'
+        LPAREN
+            'String' LBRAC RBRAC
+            args=ID
+        RPAREN
+        LCURLY
+            ( stmt )*
+        RCURLY #MainFunction
     ;
+
 
 stmt
-    : expr EQUALS expr SEMI #AssignStmt 
-    | 'if' LPAREN expr* RPAREN stmt 'else' stmt #IfElseStmt
+    : expr EQUALS expr SEMI #AssignStmt
+    | varDecl #VarDeclStmt
+    | 'if' LPAREN expr* RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr* RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
     | RETURN expr SEMI #ReturnStmt
+    | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
 expr
@@ -80,7 +108,9 @@ expr
     | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
-    | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr 
+    | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
+    | expr '.' ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr LBRAC expr RBRAC #ArrayRefExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
     | expr '.length' #LengthExpr
@@ -89,8 +119,6 @@ expr
     | name=ID LBRAC expr RBRAC #ArrayRefExpr
     | name=ID #VarRefExpr 
     | value=INTEGER #IntegerLiteral 
-    | bool=( 'true' | 'false' ) #BoolExpr
+    | bool=BOOLEAN #BoolExpr
+    | bool=BOOLEAN #BoolExpr
     ;
-
-
-

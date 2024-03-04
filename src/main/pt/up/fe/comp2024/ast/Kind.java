@@ -9,7 +9,7 @@ import java.util.Set;
 public enum Kind {
     PROGRAM,
     IMPORT_DECL,
-    CLASS_DECL,
+    CLASS_DECL_RULE,
     VAR_DECL,
     ARRAY_TYPE,
     VARARG_TYPE,
@@ -20,7 +20,7 @@ public enum Kind {
     CLASS_METHOD,
     MAIN_FUNCTION,
     ASSIGN_STMT,
-    IFELSE_STMT,
+    IF_ELSE_STMT,
     WHILE_STMT,
     EXPR_STMT,
     RETURN_STMT,
@@ -35,6 +35,7 @@ public enum Kind {
     NEW_ARRAY_EXPR,
     NEW_OBJ_EXPR,
     BOOL_EXPR,
+    TYPE,
     SELF_EXPR;
 
 

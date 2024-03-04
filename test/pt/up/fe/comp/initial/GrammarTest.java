@@ -32,7 +32,7 @@ public class GrammarTest {
 
     @Test
     public void testInstanceMethodEmpty() {
-        TestUtils.parseVerbose("int foo(int anInt) {return anInt;}",
+        TestUtils.parseVerbose("int foo(int anInt, int anotherInt) {return anInt;}",
                 INSTANCE_METHOD);
     }
 
