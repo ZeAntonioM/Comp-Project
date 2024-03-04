@@ -7,14 +7,9 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 public class TypeUtils {
 
     private static final String INT_TYPE_NAME = "int";
-    private static final String BOOL_TYPE_NAME = "bool";
 
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
-    }
-
-    public static String getBoolTypeName() {
-        return BOOL_TYPE_NAME;
     }
 
     /**

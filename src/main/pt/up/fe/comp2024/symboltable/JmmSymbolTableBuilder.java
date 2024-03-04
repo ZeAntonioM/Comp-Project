@@ -26,8 +26,10 @@ public class JmmSymbolTableBuilder {
         var returnTypes = buildReturnTypes(classDecl);
         var params = buildParams(classDecl);
         var locals = buildLocals(classDecl);
+        var fields = buildFields(classDecl);
 
-        return new JmmSymbolTable(className, imports, methods, returnTypes, params, locals);
+
+        return new JmmSymbolTable(className, imports, methods, returnTypes, params, locals, fields);
     }
 
     private static List<String> buildImports(JmmNode root) {
@@ -43,6 +45,22 @@ public class JmmSymbolTableBuilder {
 
         return imports;
     }
+
+    private static List<Symbol> buildFields(JmmNode classDecl) {
+        List<Symbol> fields = new ArrayList<>();
+        List<JmmNode> children = classDecl.getChildren(VAR_DECL);
+
+        for (JmmNode varDecl : children) {
+            JmmNode typeNode = varDecl.getChildren(TYPE).get(0);
+            String type = typeNode.get("name");
+            boolean isArray = typeNode.get("isArray").equals("true");
+            String name = varDecl.get("name");
+
+            fields.add(new Symbol(new Type(type, isArray), name));
+        }
+        return fields;
+    }
+
 
     private static Map<String, Type> buildReturnTypes(JmmNode classDecl) {
         Map<String, Type> map = new HashMap<>();
@@ -74,10 +92,16 @@ public class JmmSymbolTableBuilder {
             for (int i = 0; i < paramsTypeNodes.size(); i++) {
                 String type = paramsTypeNodes.get(i).get("name");
                 boolean isArray = paramsTypeNodes.get(i).get("isArray").equals("true");
+                boolean isVararg = paramsTypeNodes.get(i).get("isVararg").equals("true");
 
                 String name = paramsNames.get(i);
 
-                map.put(method.get("name"), Arrays.asList(new Symbol(new Type(type, isArray), name)));
+                //verification step to see if vararg is valid
+                // CANT be an array at the same time, HAS to be type int and HAS to be the last parameter
+                if (isVararg && !isArray && type.equals("int") && i == paramsTypeNodes.size() - 1) {
+                    map.put(method.get("name"), Arrays.asList(new Symbol(new Type("vararg", false), name)));
+                }
+                if (!isVararg) map.put(method.get("name"), Arrays.asList(new Symbol(new Type(type, isArray), name)));
             }
         }
 
@@ -85,19 +109,22 @@ public class JmmSymbolTableBuilder {
     }
 
     private static Map<String, List<Symbol>> buildLocals(JmmNode classDecl) {
-        // TODO: Simple implementation that needs to be expanded
-
         Map<String, List<Symbol>> map = new HashMap<>();
 
+        List<JmmNode> children = classDecl.getChildren(METHOD_DECL);
 
-        classDecl.getChildren(METHOD_DECL).stream()
-                .forEach(method -> map.put(method.get("name"), getLocalsList(method)));
+        for (JmmNode method : children) {
 
+            String name = method.get("name");
+
+            List<Symbol> locals = getLocalsList(method);
+
+            map.put(name, locals);
+        }
         return map;
     }
 
     private static List<String> buildMethods(JmmNode classDecl) {
-
         return classDecl.getChildren(METHOD_DECL).stream()
                 .map(method -> method.get("name"))
                 .toList();
@@ -105,13 +132,22 @@ public class JmmSymbolTableBuilder {
 
 
     private static List<Symbol> getLocalsList(JmmNode methodDecl) {
-        // TODO: Simple implementation that needs to be expanded
 
-        var intType = new Type(TypeUtils.getIntTypeName(), false);
+        List<Symbol> locals = new ArrayList<>();
 
-        return methodDecl.getChildren(VAR_DECL).stream()
-                .map(varDecl -> new Symbol(intType, varDecl.get("name")))
-                .toList();
+        List<JmmNode> children = methodDecl.getChildren(VAR_DECL);
+
+        for (JmmNode varDecl : children) {
+
+            JmmNode typeNode = varDecl.getChildren(TYPE).get(0);
+            String type = typeNode.get("name");
+            boolean isArray = typeNode.get("isArray").equals("true");
+
+            locals.add(new Symbol(new Type(type, isArray), varDecl.get("name")));
+
+        }
+        return locals;
+
     }
 
 }

@@ -24,6 +24,7 @@ RCOM : '*/';
 LCOM: '/*';
 
 CLASS : 'class' ;
+STATIC : 'static' ;
 INT : 'int' ;
 BOOL : 'boolean';
 PUBLIC : 'public' ;
@@ -63,15 +64,16 @@ varDecl
 type locals [boolean isArray=false, boolean isVararg=false]
     : name=INT LBRAC RBRAC {$isArray=true;} #ArrayType
     | name=INT '...' {$isVararg=true;}#VarargType
-    | name=BOOL #BoolType
     | name=INT #IntType
+    | name=BOOL #BoolType
     | name=ID #ObjectType
     | name='String' {$isArray=true;} #StringType
     ;
 
 
-methodDecl locals [boolean isPublic=false]
+methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     : (PUBLIC {$isPublic=true;})?
+        (STATIC {$isStatic=true;})?
         type name=ID
         LPAREN
             ( type args+=ID ( ',' type args+=ID )* )?
@@ -82,7 +84,8 @@ methodDecl locals [boolean isPublic=false]
             SEMI
         RCURLY #ClassMethod
     | (PUBLIC {$isPublic=true;})?
-        'static void main'
+        (STATIC {$isStatic=true;})?
+        'void' 'main'
         LPAREN
             'String' LBRAC RBRAC
             args=ID
@@ -113,12 +116,17 @@ expr
     | expr LBRAC expr RBRAC #ArrayRefExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
-    | expr '.length' #LengthExpr
-    | 'this' #SelfExpr
-    | 'new' name=ID LPAREN RPAREN #NewObjExpr
-    | name=ID LBRAC expr RBRAC #ArrayRefExpr
-    | name=ID #VarRefExpr 
+    | expr '.' 'length' #LengthExpr
+    | 'this' ('.' varRef)? #SelfExpr
+    | 'new' varRef LPAREN RPAREN #NewObjExpr
+    | varRef LBRAC expr RBRAC #ArrayRefExpr
     | value=INTEGER #IntegerLiteral 
     | bool=BOOLEAN #BoolExpr
-    | bool=BOOLEAN #BoolExpr
+    | varRef #VarRefExpr
+    ;
+
+varRef
+    : name=ID #VarRefRule
+    | name='main' #VarRefRule
+    | name='length' #VarRefRule
     ;
