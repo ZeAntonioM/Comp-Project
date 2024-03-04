@@ -8,10 +8,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -21,15 +18,30 @@ public class JmmSymbolTableBuilder {
     public static JmmSymbolTable build(JmmNode root) {
 
         var classDecl = root.getJmmChild(0);
-        SpecsCheck.checkArgument(Kind.CLASS_DECL.check(classDecl), () -> "Expected a class declaration: " + classDecl);
+        SpecsCheck.checkArgument(Kind.CLASS_DECL_RULE.check(classDecl), () -> "Expected a class declaration: " + classDecl);
         String className = classDecl.get("name");
 
+        var imports = buildImports(root);
         var methods = buildMethods(classDecl);
         var returnTypes = buildReturnTypes(classDecl);
         var params = buildParams(classDecl);
         var locals = buildLocals(classDecl);
 
-        return new JmmSymbolTable(className, methods, returnTypes, params, locals);
+        return new JmmSymbolTable(className, imports, methods, returnTypes, params, locals);
+    }
+
+    private static List<String> buildImports(JmmNode root) {
+        List<String> imports= new ArrayList<>();
+
+        List<List<String>> listNames = root.getChildren(IMPORT_DECL).stream()
+                .map(importDecl -> importDecl.getObjectAsList("name", String.class)).toList();
+
+        for (List<String> list : listNames) {
+            String importName = String.join(".", list);
+            imports.add(importName);
+        }
+
+        return imports;
     }
 
     private static Map<String, Type> buildReturnTypes(JmmNode classDecl) {

@@ -44,7 +44,7 @@ program
     ;
 
 importDecl
-    : 'import' ID ( '.' ID )* SEMI #ImportDeclRule
+    : 'import' name+=ID ( '.' name+=ID )* SEMI #ImportDeclRule
     ;
 
 classDecl
@@ -82,7 +82,7 @@ methodDecl locals [boolean isPublic=false]
             SEMI
         RCURLY #ClassMethod
     | (PUBLIC {$isPublic=true;})?
-        'static' 'void' 'main'
+        'static void main'
         LPAREN
             'String' LBRAC RBRAC
             args=ID
