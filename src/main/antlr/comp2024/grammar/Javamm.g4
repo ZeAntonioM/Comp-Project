@@ -48,9 +48,9 @@ importDecl
     : 'import' name+=ID ( '.' name+=ID )* SEMI #ImportDeclRule
     ;
 
-classDecl
+classDecl locals [boolean hasSuperClass = false]
     : CLASS name=ID
-        ('extends' ID)?
+        ('extends' superclass=ID {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
         RCURLY #ClassDeclRule
@@ -76,7 +76,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
         (STATIC {$isStatic=true;})?
         type name=ID
         LPAREN
-            ( type args+=ID ( ',' type args+=ID )* )?
+            ( paramDecl ( ',' paramDecl )* )?
         RPAREN
         LCURLY
             ( stmt )*
@@ -85,7 +85,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
         RCURLY #ClassMethod
     | (PUBLIC {$isPublic=true;})?
         (STATIC {$isStatic=true;})?
-        'void' 'main'
+        'void' name='main'
         LPAREN
             'String' LBRAC RBRAC
             args=ID
@@ -95,6 +95,10 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
         RCURLY #MainFunction
     ;
 
+paramDecl
+    : type name=ID #ParamRule
+    | type name=ID '...' #VarargParamRule
+    ;
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
@@ -117,16 +121,10 @@ expr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
     | expr '.' 'length' #LengthExpr
-    | 'this' ('.' varRef)? #SelfExpr
-    | 'new' varRef LPAREN RPAREN #NewObjExpr
-    | varRef LBRAC expr RBRAC #ArrayRefExpr
+    | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
+    | 'new' (name=ID | name='main' | name='length') LPAREN RPAREN #NewObjExpr
+    | (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr
     | value=INTEGER #IntegerLiteral 
     | bool=BOOLEAN #BoolExpr
-    | varRef #VarRefExpr
-    ;
-
-varRef
-    : name=ID #VarRefRule
-    | name='main' #VarRefRule
-    | name='length' #VarRefRule
+    | (name=ID | name='main' | name='length') #VarRefExpr
     ;

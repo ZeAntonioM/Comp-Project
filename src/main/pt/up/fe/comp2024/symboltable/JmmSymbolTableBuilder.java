@@ -17,9 +17,11 @@ public class JmmSymbolTableBuilder {
 
     public static JmmSymbolTable build(JmmNode root) {
 
-        var classDecl = root.getJmmChild(0);
+        var classDecl = root.getChildren(CLASS_DECL_RULE).get(0);
         SpecsCheck.checkArgument(Kind.CLASS_DECL_RULE.check(classDecl), () -> "Expected a class declaration: " + classDecl);
         String className = classDecl.get("name");
+        boolean hasSuperClass = classDecl.get("hasSuperClass").equals("true");
+        String superClass = hasSuperClass ? classDecl.get("superclass") : "";
 
         var imports = buildImports(root);
         var methods = buildMethods(classDecl);
@@ -29,7 +31,7 @@ public class JmmSymbolTableBuilder {
         var fields = buildFields(classDecl);
 
 
-        return new JmmSymbolTable(className, imports, methods, returnTypes, params, locals, fields);
+        return new JmmSymbolTable(className, superClass, imports, methods, returnTypes, params, locals, fields);
     }
 
     private static List<String> buildImports(JmmNode root) {
@@ -50,7 +52,7 @@ public class JmmSymbolTableBuilder {
         List<Symbol> fields = new ArrayList<>();
         List<JmmNode> children = classDecl.getChildren(VAR_DECL);
 
-        for (JmmNode varDecl : children) {
+        for (JmmNode varDecl: children) {
             JmmNode typeNode = varDecl.getChildren(TYPE).get(0);
             String type = typeNode.get("name");
             boolean isArray = typeNode.get("isArray").equals("true");
@@ -68,6 +70,13 @@ public class JmmSymbolTableBuilder {
         List<JmmNode> children = classDecl.getChildren(METHOD_DECL);
 
         for (JmmNode method : children) {
+            boolean isMain = method.get("name").equals("main");
+
+            if (isMain) {
+                map.put(method.get("name"), new Type("void", false));
+                continue;
+            }
+
             JmmNode typeNode = method.getChildren(TYPE).get(0);
             String type = typeNode.get("name");
             boolean isArray = typeNode.get("isArray").equals("true");
@@ -84,25 +93,38 @@ public class JmmSymbolTableBuilder {
         List<JmmNode> children = classDecl.getChildren(METHOD_DECL);
 
         for (JmmNode method : children) {
-            List<JmmNode> paramsTypeNodes = method.getChildren(TYPE);
-            List<String> paramsNames = method.getObjectAsList("args", String.class);
-            // remove the first element of paramsTypeNodes, which is the return type
-            paramsTypeNodes.remove(0);
 
-            for (int i = 0; i < paramsTypeNodes.size(); i++) {
-                String type = paramsTypeNodes.get(i).get("name");
-                boolean isArray = paramsTypeNodes.get(i).get("isArray").equals("true");
-                boolean isVararg = paramsTypeNodes.get(i).get("isVararg").equals("true");
+                String name = method.get("name");
 
-                String name = paramsNames.get(i);
+                List<Symbol> params = new ArrayList<>();
 
-                //verification step to see if vararg is valid
-                // CANT be an array at the same time, HAS to be type int and HAS to be the last parameter
-                if (isVararg && !isArray && type.equals("int") && i == paramsTypeNodes.size() - 1) {
-                    map.put(method.get("name"), Arrays.asList(new Symbol(new Type("vararg", false), name)));
+                if (name.equals("main")) {
+                    params.add(new Symbol(new Type("String", true), "args"));
+                    map.put(name, params);
+                    continue;
                 }
-                if (!isVararg) map.put(method.get("name"), Arrays.asList(new Symbol(new Type(type, isArray), name)));
-            }
+
+                List<JmmNode> paramsNodes = method.getChildren(PARAM_DECL);
+
+                for (int i = 0; i < paramsNodes.size(); i++) {
+                    JmmNode paramNode = paramsNodes.get(i);
+                    String paramName = paramNode.get("name");
+
+                    JmmNode typeNode = paramNode.getChildren(TYPE).get(0);
+
+                    String type = typeNode.get("name");
+                    boolean isArray = typeNode.get("isArray").equals("true");
+                    boolean isVararg = typeNode.get("isVararg").equals("true");
+
+                    if (isVararg && !isArray && type.equals("int") && i == paramsNodes.size() - 1) {
+                        params.add(new Symbol(new Type("vararg", false), paramName));
+                        continue;
+                    }
+
+                    params.add(new Symbol(new Type(type, isArray), paramName));
+                }
+
+                map.put(name, params);
         }
 
         return map;
@@ -135,10 +157,11 @@ public class JmmSymbolTableBuilder {
 
         List<Symbol> locals = new ArrayList<>();
 
-        List<JmmNode> children = methodDecl.getChildren(VAR_DECL);
+        List<JmmNode> children = methodDecl.getChildren(VAR_DECL_STMT);
 
-        for (JmmNode varDecl : children) {
+        for (JmmNode varDeclStmt : children) {
 
+            JmmNode varDecl = varDeclStmt.getChildren(VAR_DECL).get(0);
             JmmNode typeNode = varDecl.getChildren(TYPE).get(0);
             String type = typeNode.get("name");
             boolean isArray = typeNode.get("isArray").equals("true");

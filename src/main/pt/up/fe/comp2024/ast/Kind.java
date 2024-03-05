@@ -10,6 +10,7 @@ public enum Kind {
     PROGRAM,
     IMPORT_DECL,
     CLASS_DECL_RULE,
+    VAR_DECL_STMT,
     VAR_DECL,
     ARRAY_TYPE,
     VARARG_TYPE,
@@ -17,6 +18,7 @@ public enum Kind {
     INT_TYPE,
     OBJECT_TYPE,
     METHOD_DECL,
+    PARAM_DECL,
     CLASS_METHOD,
     MAIN_FUNCTION,
     ASSIGN_STMT,
@@ -41,6 +43,8 @@ public enum Kind {
 
     private static final Set<Kind> STATEMENTS = Set.of( ASSIGN_STMT, IF_ELSE_STMT, WHILE_STMT, EXPR_STMT, RETURN_STMT);
     private static final Set<Kind> EXPRESSIONS = Set.of( PRECEDENT_EXPR, NEG_EXPR, BINARY_EXPR, INTEGER_LITERAL, ARRAY_INIT_EXPR, ARRAY_REF_EXPR, VAR_REF_EXPR, LENGTH_EXPR, NEW_ARRAY_EXPR, NEW_OBJ_EXPR, BOOL_EXPR, SELF_EXPR);
+
+    private static final Set<Kind> TYPES = Set.of( ARRAY_TYPE, VARARG_TYPE, BOOL_TYPE, INT_TYPE, OBJECT_TYPE, TYPE);
     private final String name;
 
     private Kind(String name) {
@@ -82,6 +86,10 @@ public enum Kind {
      */
     public boolean isExpr() {
         return EXPRESSIONS.contains(this);
+    }
+
+    public boolean isType(){
+        return TYPES.contains(this);
     }
 
     /**
