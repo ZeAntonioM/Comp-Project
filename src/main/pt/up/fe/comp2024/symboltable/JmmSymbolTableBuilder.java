@@ -157,11 +157,10 @@ public class JmmSymbolTableBuilder {
 
         List<Symbol> locals = new ArrayList<>();
 
-        List<JmmNode> children = methodDecl.getChildren(VAR_DECL_STMT);
+        List<JmmNode> children = methodDecl.getChildren(VAR_DECL);
 
-        for (JmmNode varDeclStmt : children) {
+        for (JmmNode varDecl: children) {
 
-            JmmNode varDecl = varDeclStmt.getChildren(VAR_DECL).get(0);
             JmmNode typeNode = varDecl.getChildren(TYPE).get(0);
             String type = typeNode.get("name");
             boolean isArray = typeNode.get("isArray").equals("true");

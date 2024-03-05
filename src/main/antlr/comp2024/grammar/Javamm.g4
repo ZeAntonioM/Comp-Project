@@ -79,7 +79,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
             ( paramDecl ( ',' paramDecl )* )?
         RPAREN
         LCURLY
-            ( stmt )*
+            varDecl* ( stmt )*
             RETURN expr
             SEMI
         RCURLY #ClassMethod
@@ -91,18 +91,16 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
             args=ID
         RPAREN
         LCURLY
-            ( stmt )*
+           varDecl* ( stmt )*
         RCURLY #MainFunction
     ;
 
 paramDecl
     : type name=ID #ParamRule
-    | type name=ID '...' #VarargParamRule
     ;
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
-    | varDecl #VarDeclStmt
     | 'if' LPAREN expr* RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr* RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
