@@ -57,8 +57,8 @@ classDecl locals [boolean hasSuperClass = false]
     ;
 
 varDecl
-    : type name=ID SEMI #VarDeclRule
-    | type name=ID EQUALS expr SEMI #VarDeclInitRule
+    : type (name=ID | name='main' | name='length') SEMI #VarDeclRule
+    | type (name=ID | name='main' | name='length') EQUALS expr SEMI #VarDeclInitRule
     ;
 
 type locals [boolean isArray=false, boolean isVararg=false]
