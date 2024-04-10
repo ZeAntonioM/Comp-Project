@@ -24,7 +24,6 @@ import pt.up.fe.specs.util.SpecsIo;
     public void classNotImported() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ClassNotImported.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
     @Test
@@ -38,7 +37,6 @@ import pt.up.fe.specs.util.SpecsIo;
     public void boolTimesInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/BoolTimesInt.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
     @Test
@@ -52,6 +50,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void arrayAccessOnInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
 
@@ -60,12 +59,15 @@ import pt.up.fe.specs.util.SpecsIo;
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+
     }
 
     @Test
     public void assignIntToBool() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/AssignIntToBool.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
@@ -79,6 +81,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void objectAssignmentPassExtends() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ObjectAssignmentPassExtends.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     @Test
@@ -132,7 +135,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleReturn.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
     @Test
@@ -147,6 +149,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/Varargs.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     //TODO
@@ -163,6 +166,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInit.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     //TODO

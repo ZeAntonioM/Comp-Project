@@ -25,19 +25,13 @@ public class OperandType extends AnalysisVisitor {
     }
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
-
-
         // Get the left and right operands
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
 
-        // Get the names of the operands
-        var leftName = leftOperand.get("name");
-        var rightName = rightOperand.get("name");
-
-        // Get the types of the operands
-        var leftType = Utils.getOperandType(leftName, table);
-        var rightType = Utils.getOperandType(rightName, table);
+        // Initialize the types of the operands
+        String leftType = Utils.getOperandType(leftOperand, table);
+        String rightType = Utils.getOperandType(rightOperand, table);
 
         leftOperand.put("type", leftType);
         rightOperand.put("type", rightType);
@@ -63,7 +57,6 @@ public class OperandType extends AnalysisVisitor {
                     null
             ));
         }
-
 
         return null;
     }

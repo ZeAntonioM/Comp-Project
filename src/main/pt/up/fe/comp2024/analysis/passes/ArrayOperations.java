@@ -24,15 +24,15 @@ public class ArrayOperations extends AnalysisVisitor {
     }
 
     private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
-        var varName = assignStmt.getChildren().get(0).get("name");
-        var varType = Utils.getOperandType(varName, table);
+        var var = assignStmt.getChildren().get(0);
+        var varType = Utils.getOperandType(var, table);
 
         var hasArray = assignStmt.getChildren().stream().anyMatch(child -> child.getKind().equals(Kind.ARRAY_INIT_EXPR.toString()));
 
         if (hasArray) {
             assert varType != null;
             if (!varType.contains("[]")) {
-                var message = String.format("Cannot assign an array to a non-array variable '%s'", varName);
+                var message = String.format("Cannot assign an array to a non-array variable '%s'", var.get("name"));
                 addReport(Report.newError(
                         Stage.SEMANTIC,
                         NodeUtils.getLine(assignStmt),

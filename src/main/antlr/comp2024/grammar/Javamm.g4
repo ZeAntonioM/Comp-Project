@@ -31,8 +31,9 @@ PUBLIC : 'public' ;
 RETURN : 'return' ;
 
 INTEGER : [0] | ([1-9][0-9]*);
+BOOLEAN: 'true' | 'false';
 ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*;
-BOOLEAN: [0] | [1] | [true] | [false];
+
 
 COMMENT : LCOM .*? RCOM -> skip;
 LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
