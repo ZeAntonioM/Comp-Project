@@ -11,6 +11,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Checks if the operands of an operation have types compatible with the operation
@@ -29,7 +30,6 @@ public class OperandType extends AnalysisVisitor {
         // Get the left and right operands
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
-        var children = binaryExpr.getChildren();
 
         // Get the names of the operands
         var leftName = leftOperand.get("name");
@@ -42,12 +42,8 @@ public class OperandType extends AnalysisVisitor {
         leftOperand.put("type", leftType);
         rightOperand.put("type", rightType);
 
-
         // Get the operator
         var operator = binaryExpr.get("op");
-
-        System.out.println(leftType + " " + leftName + " " + operator + " " + rightType + " " +rightName);
-
 
         var expectedType = switch (operator) {
             case "+", "-", "*", "/", "<", ">" -> "int";
@@ -57,24 +53,8 @@ public class OperandType extends AnalysisVisitor {
 
         binaryExpr.put("type", expectedType);
 
-        System.out.println("binaryExpr" + " " + binaryExpr);
-        System.out.println("leftOperand" + " " + leftOperand);
-        System.out.println("rightOperand" + " " + rightOperand);
-
-
-        assert leftType != null;
-        checkOperandType(binaryExpr, operator, leftType, expectedType);
-
-        assert rightType != null;
-        checkOperandType(binaryExpr, operator, rightType, expectedType);
-
-
-        return null;
-    }
-
-    private void checkOperandType(JmmNode binaryExpr, String operator, String operandType, String expectedType) {
-        if (!operandType.equals(expectedType)) {
-            var message = String.format("Operator '%s' expects operands of type '%s', but got '%s'", operator, operandType, expectedType);
+        if (!Objects.equals(leftType, expectedType) || !Objects.equals(rightType, expectedType)) {
+            var message = String.format("Operator '%s' expects operands of type '%s', but got '%s' and '%s'", operator, expectedType, leftType, rightType);
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(binaryExpr),
@@ -84,6 +64,8 @@ public class OperandType extends AnalysisVisitor {
             ));
         }
 
+
+        return null;
     }
 
 }

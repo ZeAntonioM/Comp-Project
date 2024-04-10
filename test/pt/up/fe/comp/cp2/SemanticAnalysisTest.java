@@ -19,6 +19,7 @@ import pt.up.fe.specs.util.SpecsIo;
         TestUtils.mustFail(result);
     }
 
+
     @Test
     public void classNotImported() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ClassNotImported.jmm"));
@@ -32,10 +33,12 @@ import pt.up.fe.specs.util.SpecsIo;
         TestUtils.mustFail(result);
     }
 
+
     @Test
     public void boolTimesInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/BoolTimesInt.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
@@ -44,12 +47,15 @@ import pt.up.fe.specs.util.SpecsIo;
         TestUtils.mustFail(result);
     }
 
+    //TODO
     @Test
     public void arrayAccessOnInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
     }
 
+
+    //TODO
     @Test
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
@@ -143,6 +149,7 @@ import pt.up.fe.specs.util.SpecsIo;
         TestUtils.noErrors(result);
     }
 
+    //TODO
     @Test
     public void varargsWrong() {
         var result = TestUtils
@@ -158,6 +165,7 @@ import pt.up.fe.specs.util.SpecsIo;
         TestUtils.noErrors(result);
     }
 
+    //TODO
     @Test
     public void arrayInitWrong1() {
         var result = TestUtils
