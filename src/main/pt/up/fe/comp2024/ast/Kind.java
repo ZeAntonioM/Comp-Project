@@ -98,9 +98,12 @@ public enum Kind {
      * @param node
      * @return
      */
+
     public boolean check(JmmNode node) {
-        return node.getKind().equals(getNodeName());
+        return (node.isInstance(this));
+        //return node.getKind().equals(getNodeName());
     }
+
 
     /**
      * Performs a check and throws if the test fails. Otherwise, does nothing.

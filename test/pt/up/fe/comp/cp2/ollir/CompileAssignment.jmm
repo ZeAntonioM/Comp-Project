@@ -9,7 +9,6 @@ class CompileAssignment {
         int b;
 
         b = 2;
-
         a = b;
 
         return 0;

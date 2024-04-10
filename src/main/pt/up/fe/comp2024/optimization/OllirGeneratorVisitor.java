@@ -16,6 +16,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
+
+    private static final String COMMA = ",";
     private final String END_STMT = ";\n";
     private final String NL = "\n";
     private final String L_BRACKET = " {\n";
@@ -37,8 +39,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         addVisit(PROGRAM, this::visitProgram);
         addVisit(CLASS_DECL_RULE, this::visitClass);
+        addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(METHOD_DECL, this::visitMethodDecl);
-        //addVisit(PARAM, this::visitParam);
+        addVisit(PARAM_DECL, this::visitParam);
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
@@ -109,9 +112,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var typeCode = OptUtils.toOllirType(node.getJmmChild(0));
         var id = node.get("name");
 
-        String code = id + typeCode;
-
-        return code;
+        return id + typeCode;
     }
 
 
@@ -120,32 +121,52 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder(".method ");
 
         boolean isPublic = NodeUtils.getBooleanAttribute(node, "isPublic", "false");
+        boolean isStatic = NodeUtils.getBooleanAttribute(node, "isStatic", "false");
 
         if (isPublic) {
             code.append("public ");
+        }
+
+        if (isStatic) {
+            code.append("static ");
         }
 
         // name
         var name = node.get("name");
         code.append(name);
 
+        code.append("(");
         // param
-        var paramCode = visit(node.getJmmChild(1));
-        code.append("(" + paramCode + ")");
+        var afterParam = 1;
+        if (PARAM_DECL.check(node.getJmmChild(1))){
+            for (int i = 1; i < node.getNumChildren(); i++) {
+                var child = node.getJmmChild(i); //param
+                var paramCode = visit(child);
+                code.append(paramCode);
+                code.append(COMMA);
+                code.append(SPACE);
+                afterParam++;
+            }
+            code.delete(code.length() -2, code.length() - 1);
+        }
+
+        code.append(")");
 
         // type
         var retType = OptUtils.toOllirType(node.getJmmChild(0));
         code.append(retType);
         code.append(L_BRACKET);
-
+        code.append(NL);
 
         // rest of its children stmts
-        var afterParam = 2;
         for (int i = afterParam; i < node.getNumChildren(); i++) {
             var child = node.getJmmChild(i);
             var childCode = visit(child);
             code.append(childCode);
         }
+
+        //return
+        //TODO: ver q visits preciso de mudar
 
         code.append(R_BRACKET);
         code.append(NL);
@@ -178,6 +199,24 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(buildConstructor());
         code.append(R_BRACKET);
 
+        return code.toString();
+    }
+
+    private String visitVarDecl(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        // fields and vars
+
+        var type = OptUtils.toOllirType(node.getJmmChild(0));
+        var id = node.get("name");
+
+        if (CLASS_DECL_RULE.check(node.getParent())) {
+            code.append(".field public ");
+            code.append(id);
+            code.append(type);
+            code.append(NL);
+        } else {
+            throw new RuntimeException("VarDecl not in a class");
+        }
         return code.toString();
     }
 
