@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
+import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
@@ -24,20 +25,22 @@ public class OperandType extends AnalysisVisitor {
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
 
-        System.out.println("Visit Binary Expr");
-
 
         // Get the left and right operands
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
+        var children = binaryExpr.getChildren();
 
         // Get the names of the operands
         var leftName = leftOperand.get("name");
         var rightName = rightOperand.get("name");
 
         // Get the types of the operands
-        var leftType = getOperandType(leftName, table);
-        var rightType = getOperandType(rightName, table);
+        var leftType = Utils.getOperandType(leftName, table);
+        var rightType = Utils.getOperandType(rightName, table);
+
+        leftOperand.put("type", leftType);
+        rightOperand.put("type", rightType);
 
 
         // Get the operator
@@ -52,7 +55,17 @@ public class OperandType extends AnalysisVisitor {
             default -> throw new IllegalArgumentException("Unknown operator: " + operator);
         };
 
+        binaryExpr.put("type", expectedType);
+
+        System.out.println("binaryExpr" + " " + binaryExpr);
+        System.out.println("leftOperand" + " " + leftOperand);
+        System.out.println("rightOperand" + " " + rightOperand);
+
+
+        assert leftType != null;
         checkOperandType(binaryExpr, operator, leftType, expectedType);
+
+        assert rightType != null;
         checkOperandType(binaryExpr, operator, rightType, expectedType);
 
 
@@ -71,33 +84,6 @@ public class OperandType extends AnalysisVisitor {
             ));
         }
 
-    }
-
-
-    private String getOperandType(String operandName, SymbolTable table) {
-        // Check if the operand is a field
-        for (Symbol field : table.getFields()) {
-            if (field.getName().equals(operandName)) {
-                return field.getType().getName() + (field.getType().isArray() ? "[]" : "");
-            }
-        }
-
-        // Check if the operand is a parameter or local variable of the current method
-        for (String method : table.getMethods()) {
-            for (Symbol parameter : table.getParameters(method)) {
-                if (parameter.getName().equals(operandName)) {
-                    return parameter.getType().getName() + (parameter.getType().isArray() ? "[]" : "");
-                }
-            }
-            for (Symbol localVariable : table.getLocalVariables(method)) {
-                if (localVariable.getName().equals(operandName)) {
-                    return localVariable.getType().getName() + (localVariable.getType().isArray() ? "[]" : "");
-                }
-            }
-        }
-
-        // If the operand is not a field, parameter, or local variable, return null
-        return null;
     }
 
 }
