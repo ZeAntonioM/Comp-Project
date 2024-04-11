@@ -124,6 +124,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         boolean isPublic = NodeUtils.getBooleanAttribute(node, "isPublic", "false");
         boolean isStatic = NodeUtils.getBooleanAttribute(node, "isStatic", "false");
+        boolean isMain = node.getNumChildren() == 0;
 
         if (isPublic) {
             code.append("public ");
@@ -140,22 +141,25 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append("(");
         // param
         var afterParam = 1;
-        if (PARAM_DECL.check(node.getJmmChild(1))){
-            for (int i = 1; i < node.getNumChildren(); i++) {
-                var child = node.getJmmChild(i); //param
-                var paramCode = visit(child);
-                code.append(paramCode);
-                code.append(COMMA);
-                code.append(SPACE);
-                afterParam++;
+        if (!isMain) {
+            if (PARAM_DECL.check(node.getJmmChild(1))) {
+                for (int i = 1; i < node.getNumChildren(); i++) {
+                    var child = node.getJmmChild(i); //param
+                    var paramCode = visit(child);
+                    code.append(paramCode);
+                    code.append(COMMA);
+                    code.append(SPACE);
+                    afterParam++;
+                }
+                code.delete(code.length() - 2, code.length() - 1);
             }
-            code.delete(code.length() -2, code.length() - 1);
         }
 
         code.append(")");
 
         // type
-        var retType = OptUtils.toOllirType(node.getJmmChild(0));
+        String retType;
+        retType = isMain ? ".V" : OptUtils.toOllirType(node.getJmmChild(0));
         code.append(retType);
         code.append(L_BRACKET);
         code.append(NL);
@@ -169,12 +173,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         //return
         //check has return
-        if (EXPR_STMT.check(node.getJmmChild(node.getNumChildren() - 1))) {
-            code.append("ret");
-            code.append(retType);
-            code.append(SPACE);
-            code.append(exprVisitor.visit(node.getJmmChild(node.getNumChildren() - 1)).getCode());
-            code.append(END_STMT);
+        if (!retType.equals(".V")) {
+                var expr = exprVisitor.visit(node.getJmmChild(node.getNumChildren() - 1));
+                code.append(expr.getComputation());
+                code.append("ret");
+                code.append(retType);
+                code.append(SPACE);
+                code.append(expr.getCode());
+                code.append(END_STMT);
         }
 
         code.append(R_BRACKET);
@@ -188,7 +194,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         StringBuilder code = new StringBuilder();
 
+        boolean hasSuperClass = NodeUtils.getBooleanAttribute(node, "hasSuperClass", "false");
+
+
         code.append(table.getClassName());
+        if (hasSuperClass) {
+            code.append(" extends ");
+            code.append(node.get("superclass"));
+        }
         code.append(L_BRACKET);
 
         code.append(NL);
@@ -223,8 +236,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             code.append(id);
             code.append(type);
             code.append(NL);
-        } else {
-            throw new RuntimeException("VarDecl not in a class");
         }
         return code.toString();
     }

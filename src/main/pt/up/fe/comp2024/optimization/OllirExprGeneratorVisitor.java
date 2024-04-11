@@ -40,7 +40,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         return new OllirExprResult(code);
     }
 
-
+    //code is pretty much the tmp variable name
+    //while computation is the code to compute the value to put in the tmp variable
     private OllirExprResult visitBinExpr(JmmNode node, Void unused) {
 
         var lhs = visit(node.getJmmChild(0));
@@ -61,8 +62,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 .append(ASSIGN).append(resOllirType).append(SPACE)
                 .append(lhs.getCode()).append(SPACE);
 
-        Type type = TypeUtils.getExprType(node, table);
-        computation.append(node.get("op")).append(OptUtils.toOllirType(type)).append(SPACE)
+        computation.append(node.get("op")).append(resOllirType).append(SPACE)
                 .append(rhs.getCode()).append(END_STMT);
 
         return new OllirExprResult(code, computation);

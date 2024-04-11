@@ -40,7 +40,7 @@ public class TypeUtils {
         String operator = binaryExpr.get("op");
 
         return switch (operator) {
-            case "+", "*" -> new Type(INT_TYPE_NAME, false);
+            case "+", "*", "-", "/" -> new Type(INT_TYPE_NAME, false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
         };
