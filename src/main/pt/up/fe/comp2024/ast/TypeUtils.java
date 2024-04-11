@@ -49,7 +49,12 @@ public class TypeUtils {
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
         // TODO: Simple implementation that needs to be expanded
-        var methodName = varRefExpr.getJmmParent().get("name");
+        var parent = varRefExpr.getParent();
+
+        while(parent != null && (!Kind.METHOD_DECL.check(parent) &&  !Kind.CLASS_DECL_RULE.check(parent))) {
+            parent = parent.getParent();
+        }
+        var methodName = parent.get("name");
         var params = table.getParameters(methodName);
         var varName = varRefExpr.get("name");
 
