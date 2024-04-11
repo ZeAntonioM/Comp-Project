@@ -42,13 +42,12 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(METHOD_DECL, this::visitMethodDecl);
         addVisit(PARAM_DECL, this::visitParam);
-        addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
 
-
+    //? seems to be done?
     private String visitAssignStmt(JmmNode node, Void unused) {
 
         var lhs = exprVisitor.visit(node.getJmmChild(0));
@@ -81,6 +80,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
 
+    /*
     private String visitReturn(JmmNode node, Void unused) {
 
         String methodName = node.getAncestor(METHOD_DECL).map(method -> method.get("name")).orElseThrow();
@@ -106,6 +106,8 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
+     */
+
 
     private String visitParam(JmmNode node, Void unused) {
 
@@ -115,7 +117,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return id + typeCode;
     }
 
-
+    //TODO: WILL HAVE TYPE ANNOTATION
     private String visitMethodDecl(JmmNode node, Void unused) {
 
         StringBuilder code = new StringBuilder(".method ");
@@ -166,7 +168,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         }
 
         //return
-        //TODO: ver q visits preciso de mudar
+        //check has return
+        if (EXPR_STMT.check(node.getJmmChild(node.getNumChildren() - 1))) {
+            code.append("ret");
+            code.append(retType);
+            code.append(SPACE);
+            code.append(exprVisitor.visit(node.getJmmChild(node.getNumChildren() - 1)).getCode());
+            code.append(END_STMT);
+        }
 
         code.append(R_BRACKET);
         code.append(NL);
