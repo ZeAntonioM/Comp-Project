@@ -49,8 +49,33 @@ public class TypeUtils {
 
     private static Type getVarExprType(JmmNode varRefExpr, SymbolTable table) {
         // TODO: Simple implementation that needs to be expanded
-        var kind = Kind.fromString(varRefExpr.getKind());
-        return new Type(INT_TYPE_NAME, false);
+        var methodName = varRefExpr.getJmmParent().get("name");
+        var params = table.getParameters(methodName);
+        var varName = varRefExpr.get("name");
+
+        for (var param : params) {
+            if (param.getName().equals(varName)) {
+                return param.getType();
+            }
+        }
+
+        var locals = table.getLocalVariables(methodName);
+
+        for (var local : locals) {
+            if (local.getName().equals(varName)) {
+                return local.getType();
+            }
+        }
+
+        var fields = table.getFields();
+
+        for (var field : fields) {
+            if (field.getName().equals(varName)) {
+                return field.getType();
+            }
+        }
+
+        throw new RuntimeException("Variable '" + varName + "' not found in method '" + methodName + "'");
     }
 
 

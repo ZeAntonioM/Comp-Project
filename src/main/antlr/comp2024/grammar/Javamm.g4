@@ -43,8 +43,8 @@ program
     : (importDecl)* classDecl EOF
     ;
 
-importDecl
-    : 'import' name+=ID ( '.' name+=ID )* SEMI #ImportDeclRule
+importDecl locals [boolean isSubImport = false]
+    : 'import' name+=ID ( '.' name+=ID {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]

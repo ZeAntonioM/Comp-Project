@@ -37,6 +37,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     @Override
     protected void buildVisitor() {
 
+        addVisit(IMPORT_DECL, this::visitImport);
         addVisit(PROGRAM, this::visitProgram);
         addVisit(CLASS_DECL_RULE, this::visitClass);
         addVisit(VAR_DECL, this::visitVarDecl);
@@ -45,6 +46,17 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private String visitImport(JmmNode jmmNode, Void unused) {
+        var imports = jmmNode.getObjectAsList("name", String.class);
+        if(jmmNode.get("isSubImport").equals("true")){
+            return "import " + String.join(".", imports) + END_STMT;
+        }
+        else {
+            return "import " + imports.get(0) + END_STMT;
+        }
+
     }
 
     //? seems to be done?
@@ -147,11 +159,12 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                     var child = node.getJmmChild(i); //param
                     var paramCode = visit(child);
                     code.append(paramCode);
+                    afterParam++;
+                    if (i == node.getNumChildren() - 1) break;
                     code.append(COMMA);
                     code.append(SPACE);
-                    afterParam++;
                 }
-                code.delete(code.length() - 2, code.length() - 1);
+                code.delete(code.length() - 2, code.length() );
             }
         }
 
@@ -162,7 +175,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         retType = isMain ? ".V" : OptUtils.toOllirType(node.getJmmChild(0));
         code.append(retType);
         code.append(L_BRACKET);
-        code.append(NL);
+        //code.append(NL);
 
         // rest of its children stmts
         for (int i = afterParam; i < node.getNumChildren(); i++) {
@@ -235,6 +248,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             code.append(".field public ");
             code.append(id);
             code.append(type);
+            code.append(END_STMT);
             code.append(NL);
         }
         return code.toString();
