@@ -119,7 +119,7 @@ expr
     | expr '.' 'length' #LengthExpr
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | 'new' (name=ID | name='main' | name='length') LPAREN RPAREN #NewObjExpr
-    | (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr
+    //| (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr
     | value=INTEGER #IntegerLiteral 
     | bool=BOOLEAN #BoolExpr
     | (name=ID | name='main' | name='length') #VarRefExpr
