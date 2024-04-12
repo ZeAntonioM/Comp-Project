@@ -1,6 +1,5 @@
 package pt.up.fe.comp2024.analysis.passes;
 
-import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -10,7 +9,6 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
-import java.lang.reflect.Array;
 
 /**
  * Checks all the array operations
@@ -18,31 +16,27 @@ import java.lang.reflect.Array;
  */
 public class ArrayOperations extends AnalysisVisitor {
 
+
     @Override
     public void buildVisitor() {
-        addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(Kind.ARRAY_REF_EXPR, this::visitArrayRefExpr);
+
     }
 
-    private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
-        var var = assignStmt.getChildren().get(0);
-        var varType = Utils.getOperandType(var, table);
-
-        var hasArray = assignStmt.getChildren().stream().anyMatch(child -> child.getKind().equals(Kind.ARRAY_INIT_EXPR.toString()));
-
-        if (hasArray) {
-            assert varType != null;
-            if (!varType.contains("[]")) {
-                var message = String.format("Cannot assign an array to a non-array variable '%s'", var.get("name"));
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(assignStmt),
-                        NodeUtils.getColumn(assignStmt),
-                        message,
-                        null
-                ));
-            }
+    private Void visitArrayRefExpr(JmmNode arrayRefExpr, SymbolTable table) {
+        var arrayType = Utils.getOperandType(arrayRefExpr, table);
+        if (arrayType != null && !arrayType.contains("[]")) {
+            var message = String.format("Cannot perform array access on a non-array variable '%s'", arrayRefExpr.get("name"));
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayRefExpr),
+                    NodeUtils.getColumn(arrayRefExpr),
+                    message,
+                    null
+            ));
         }
 
         return null;
+
     }
 }
