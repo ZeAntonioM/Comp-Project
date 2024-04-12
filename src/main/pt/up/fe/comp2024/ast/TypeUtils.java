@@ -80,7 +80,8 @@ public class TypeUtils {
             }
         }
 
-        throw new RuntimeException("Variable '" + varName + "' not found in method '" + methodName + "'");
+        return new Type("", false);
+       // throw new RuntimeException("Variable '" + varName + "' not found in method '" + methodName + "'");
     }
 
 
