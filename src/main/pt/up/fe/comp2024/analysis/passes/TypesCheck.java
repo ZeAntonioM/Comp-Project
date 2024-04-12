@@ -1,6 +1,5 @@
 package pt.up.fe.comp2024.analysis.passes;
 
-import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -10,18 +9,19 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
  * Checks if the operands of an operation have types compatible with the operation
  *
  */
-public class OperandType extends AnalysisVisitor {
+public class TypesCheck extends AnalysisVisitor {
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.BINARY_EXPR, this::visitBinaryExpr);
+        addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(Kind.IF_ELSE_STMT, this::visitIfElseStmt);
     }
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
@@ -60,5 +60,44 @@ public class OperandType extends AnalysisVisitor {
 
         return null;
     }
+
+    private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
+        var assigned = assignStmt.getChildren().get(0);
+        var value = assignStmt.getChildren().get(1);
+
+        var assignedType = Utils.getOperandType(assigned, table);
+        var valueType = Utils.getOperandType(value, table);
+
+        if (assignedType != null && valueType != null && !assignedType.equals(valueType)) {
+            var message = String.format("Cannot assign a value of type '%s' to a variable of type '%s'", valueType, assignedType);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assignStmt),
+                    NodeUtils.getColumn(assignStmt),
+                    message,
+                    null
+            ));
+        }
+
+        return null;
+    }
+
+    private Void visitIfElseStmt(JmmNode ifElseStmt, SymbolTable table) {
+        var condition = ifElseStmt.getChildren().get(0);
+        var conditionType = condition.get("op");
+        if ((!(Objects.equals(conditionType, "&&")) && (!Objects.equals(conditionType, "<")) && (!Objects.equals(conditionType, ">")))) {
+            var message = String.format("Condition must be a boolean expression, but found '%s'", conditionType);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(ifElseStmt),
+                    NodeUtils.getColumn(ifElseStmt),
+                    message,
+                    null
+            ));
+        }
+
+        return null;
+    }
+
 
 }

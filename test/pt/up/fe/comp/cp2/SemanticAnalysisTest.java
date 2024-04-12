@@ -43,25 +43,20 @@ import pt.up.fe.specs.util.SpecsIo;
     public void arrayPlusInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayPlusInt.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
 
     }
 
-    //TODO
     @Test
     public void arrayAccessOnInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
 
-    //TODO
     @Test
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
 
     }
 
@@ -69,7 +64,6 @@ import pt.up.fe.specs.util.SpecsIo;
     public void assignIntToBool() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/AssignIntToBool.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
     @Test
@@ -96,6 +90,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void intInIfCondition() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IntInIfCondition.jmm"));
         TestUtils.mustFail(result);
+        System.out.println(result.getReports());
     }
 
     @Test
