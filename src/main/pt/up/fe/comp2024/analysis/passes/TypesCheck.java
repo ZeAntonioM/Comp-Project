@@ -9,6 +9,8 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -17,17 +19,24 @@ import java.util.Objects;
  */
 public class TypesCheck extends AnalysisVisitor {
 
+    private final Map<String, String> classAndSuperClass = new HashMap<>();
+
     @Override
     public void buildVisitor() {
         addVisit(Kind.BINARY_EXPR, this::visitBinaryExpr);
         addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
-        addVisit(Kind.IF_ELSE_STMT, this::visitIfElseStmt);
+        addVisit(Kind.IF_ELSE_STMT, this::visitCondition);
+        addVisit(Kind.CLASS_DECL_RULE, this::visitClassDeclRule);
+        addVisit(Kind.WHILE_STMT, this::visitCondition);
+        addVisit(Kind.MEMBER_CALL_EXPR, this::visitMemberCallExpr);
     }
+
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         // Get the left and right operands
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
+
 
         // Initialize the types of the operands
         String leftType = Utils.getOperandType(leftOperand, table);
@@ -58,6 +67,7 @@ public class TypesCheck extends AnalysisVisitor {
             ));
         }
 
+
         return null;
     }
 
@@ -65,32 +75,68 @@ public class TypesCheck extends AnalysisVisitor {
         var assigned = assignStmt.getChildren().get(0);
         var value = assignStmt.getChildren().get(1);
 
-        var assignedType = Utils.getOperandType(assigned, table);
-        var valueType = Utils.getOperandType(value, table);
+        if (value.getKind().equals(Kind.NEW_ARRAY_EXPR.toString())) {
+            var size = value.getChildren().get(0);
+            var assignedType = Utils.getOperandType(size, table);
+            if (!assignedType.equals("int")) {
+                var message = String.format("Cannot assign '%s' as the size of the array", size.get("bool"));
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(assignStmt),
+                        NodeUtils.getColumn(assignStmt),
+                        message,
+                        null
+                ));
+            }
+        } else {
+            var assignedType = Utils.getOperandType(assigned, table);
+            var valueType = Utils.getOperandType(value, table);
+            var imports = table.getImports();
 
-        if (assignedType != null && valueType != null && !assignedType.equals(valueType)) {
-            var message = String.format("Cannot assign a value of type '%s' to a variable of type '%s'", valueType, assignedType);
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    NodeUtils.getLine(assignStmt),
-                    NodeUtils.getColumn(assignStmt),
-                    message,
-                    null
-            ));
+            // Check if assignedType and valueType are not null
+            boolean typesNotNull = assignedType != null && valueType != null;
+
+            // Check if valueType is not equal to className, superClassName, and assignedType
+            boolean typesNotEqual = !(Objects.equals(valueType, assignedType)
+                    || (classAndSuperClass.containsKey(valueType) && Objects.equals(classAndSuperClass.get(valueType), assignedType)));
+
+            // Check the types are not equal to the imports
+            boolean typesImported = imports.contains(assignedType) && imports.contains(valueType);
+
+            // If both conditions are true, add an error report
+            if (typesNotNull && typesNotEqual && !typesImported) {
+                String message = String.format("Cannot assign a value of type '%s' to a variable of type '%s'", valueType, assignedType);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(assignStmt),
+                        NodeUtils.getColumn(assignStmt),
+                        message,
+                        null
+                ));
+            }
         }
+
+
 
         return null;
     }
 
-    private Void visitIfElseStmt(JmmNode ifElseStmt, SymbolTable table) {
-        var condition = ifElseStmt.getChildren().get(0);
-        var conditionType = condition.get("op");
-        if ((!(Objects.equals(conditionType, "&&")) && (!Objects.equals(conditionType, "<")) && (!Objects.equals(conditionType, ">")))) {
+    private Void visitClassDeclRule(JmmNode classDeclRule, SymbolTable table) {
+        var className = classDeclRule.get("name");
+        var superClassName = classDeclRule.get("hasSuperClass").equals("true") ? classDeclRule.get("superclass") : null;
+        classAndSuperClass.put(className, superClassName);
+        return null;
+    }
+
+    private Void visitCondition(JmmNode conditionExpr, SymbolTable table) {
+        var condition = conditionExpr.getChildren().get(0);
+        String conditionType = Utils.getOperandType(condition, table);
+        if (!Objects.equals(conditionType, "boolean")) {
             var message = String.format("Condition must be a boolean expression, but found '%s'", conditionType);
             addReport(Report.newError(
                     Stage.SEMANTIC,
-                    NodeUtils.getLine(ifElseStmt),
-                    NodeUtils.getColumn(ifElseStmt),
+                    NodeUtils.getLine(conditionExpr),
+                    NodeUtils.getColumn(conditionExpr),
                     message,
                     null
             ));
@@ -98,6 +144,90 @@ public class TypesCheck extends AnalysisVisitor {
 
         return null;
     }
+
+    private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
+        // Extract method name from the member call expression
+        var methodName = memberCallExpr.get("id");
+
+        // Get the first child of the member call expression, which should be the object on which the method is called
+        var objectNode = memberCallExpr.getChildren().get(0);
+
+        // Get the parameters of the method
+        var parameters = memberCallExpr.getChildren().subList(1, memberCallExpr.getChildren().size());
+
+        // Determine the type of the object
+        var objectClassName = Utils.getOperandType(objectNode, table);
+
+        // Get the list of methods and imports from the symbol table
+        var availableMethods = table.getMethods();
+        var importedClasses = table.getImports();
+
+        // Check if the object's class or its superclass is imported
+        var superClass = classAndSuperClass.get(objectClassName);
+        var isSuperClassImported = importedClasses.contains(superClass);
+        var isClassImported = importedClasses.contains(objectClassName);
+
+
+        if (superClass == null && !isClassImported) {
+            if (!availableMethods.contains(methodName)) {
+                var errorMessage = String.format("Class '%s' does not contain a method '%s'", objectClassName, methodName);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(memberCallExpr),
+                        NodeUtils.getColumn(memberCallExpr),
+                        errorMessage,
+                        null
+                ));
+            }
+            else {
+                var declaredParameters = table.getParameters(methodName);
+                // Check if the number of parameters is the same
+                if (parameters.size() != declaredParameters.size()) {
+                    var errorMessage = String.format("Method '%s' expects %d parameters, but got %d", methodName, declaredParameters.size(), parameters.size());
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(memberCallExpr),
+                            NodeUtils.getColumn(memberCallExpr),
+                            errorMessage,
+                            null
+                    ));
+                }
+                else {
+                    // Check if the types of the parameters are the same
+                    for (int i = 0; i < parameters.size(); i++) {
+                        var parameterType = Utils.getOperandType(parameters.get(i), table);
+                        var declaredParameterType = declaredParameters.get(i).getType().getName();
+                        if (!Objects.equals(parameterType, declaredParameterType)) {
+                            var errorMessage = String.format("Method '%s' expects parameter %d to be of type '%s', but got '%s'", methodName, i + 1, declaredParameterType, parameterType);
+                            addReport(Report.newError(
+                                    Stage.SEMANTIC,
+                                    NodeUtils.getLine(memberCallExpr),
+                                    NodeUtils.getColumn(memberCallExpr),
+                                    errorMessage,
+                                    null
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+        else if (superClass != null && !isSuperClassImported) {
+            if (!availableMethods.contains(superClass)) {
+                var errorMessage = String.format("Class '%s' does not contain a method '%s'", superClass, methodName);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(memberCallExpr),
+                        NodeUtils.getColumn(memberCallExpr),
+                        errorMessage,
+                        null
+                ));
+            }
+        }
+
+        return null;
+    }
+
+
 
 
 }

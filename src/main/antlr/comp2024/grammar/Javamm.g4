@@ -108,12 +108,12 @@ stmt
     ;
 
 expr
-    : LPAREN expr RPAREN #PrecendentExpr
+    : LPAREN expr RPAREN #PrecedentExpr
     | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
-    | expr '.' ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr '.' id=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
