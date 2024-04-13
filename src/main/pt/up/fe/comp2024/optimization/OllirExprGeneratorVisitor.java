@@ -32,8 +32,50 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(BINARY_EXPR, this::visitBinExpr);
         addVisit(INTEGER_LITERAL, this::visitInteger);
         addVisit(MEMBER_CALL_EXPR, this::visitMemberCallExpr);
+        addVisit(PRECEDENT_EXPR, this::visitPrecedentExpr);
+        addVisit(BOOL_EXPR, this::visitBoolExpr);
+        addVisit(NEG_EXPR, this::visitNegExpr);
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitNegExpr(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        Type resType = TypeUtils.getExprType(node, table);
+        String resOllirType = OptUtils.toOllirType(resType);
+        String code = OptUtils.getTemp() + resOllirType;
+
+        var child = visit(node.getJmmChild(0));
+
+        computation.append(child.getComputation());
+
+        computation.append(code).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE)
+                .append("!").append(resOllirType).append(SPACE).append(child.getCode()).append(END_STMT);
+
+        return new OllirExprResult(code, computation);
+
+    }
+
+    private OllirExprResult visitBoolExpr(JmmNode node, Void unused) {
+        if (node.get("bool").equals("true")){
+            return new OllirExprResult("1.bool");
+        }
+        else {
+            return new OllirExprResult("0.bool");
+        }
+    }
+
+    private OllirExprResult visitPrecedentExpr(JmmNode node, Void unused) {
+        var code = new StringBuilder();
+        var computation = new StringBuilder();
+
+        for (var child : node.getChildren()) {
+            var childResult = visit(child);
+            code.append(childResult.getCode());
+            computation.append(childResult.getComputation());
+        }
+
+        return new OllirExprResult(code.toString(), computation.toString());
     }
 
     private OllirExprResult visitMemberCallExpr(JmmNode node, Void unused) {

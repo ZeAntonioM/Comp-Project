@@ -4,12 +4,13 @@ class CompileAssignment {
 
     }
 
-    public int foo() {
-        int a;
-        int b;
 
-        b = 2;
-        a = b;
+    public int foo() {
+        boolean a;
+        boolean b;
+
+        a = false && true;
+        b = !true;
 
         return 0;
     }

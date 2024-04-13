@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 public class TypeUtils {
 
     private static final String INT_TYPE_NAME = "int";
+    private static final String BOOLEAN_TYPE_NAME = "boolean";
 
     public static String getIntTypeName() {
         return INT_TYPE_NAME;
@@ -28,6 +29,7 @@ public class TypeUtils {
             case BINARY_EXPR -> getBinExprType(expr);
             case VAR_REF_EXPR -> getVarExprType(expr, table);
             case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
+            case BOOL_EXPR, NEG_EXPR -> new Type(BOOLEAN_TYPE_NAME,false);
             default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
         };
 
@@ -41,6 +43,7 @@ public class TypeUtils {
 
         return switch (operator) {
             case "+", "*", "-", "/" -> new Type(INT_TYPE_NAME, false);
+            case "<", ">", "&&" -> new Type(BOOLEAN_TYPE_NAME, false);
             default ->
                     throw new RuntimeException("Unknown operator '" + operator + "' of expression '" + binaryExpr + "'");
         };
