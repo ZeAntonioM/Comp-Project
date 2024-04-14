@@ -82,6 +82,8 @@ public class TypesCheck extends AnalysisVisitor {
         var assigned = assignStmt.getChildren().get(0);
         var value = assignStmt.getChildren().get(1);
 
+
+
         if (value.getKind().equals(Kind.NEW_ARRAY_EXPR.toString())) {
             var size = value.getChildren().get(0);
             var assignedType = Utils.getOperandType(size, table, currentMethod);

@@ -37,6 +37,9 @@ public class Utils {
             // Return the name of the return type
             return returnType.getName() + (returnType.isArray() ? "[]" : "");
         }
+        else if (operand.getKind().equals(Kind.ARRAY_INIT_EXPR.toString())) {
+            return "int[]";
+        }
         else {
             String operandName = operand.get("name");
             // Check if the operand is a parameter or local variable of the current method first

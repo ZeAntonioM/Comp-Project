@@ -64,7 +64,20 @@ public class ArrayOperations extends AnalysisVisitor {
     }
 
     private Void visitArrayInitExpr(JmmNode arrayInitExpr, SymbolTable table) {
-        System.out.println("ArrayInitExpr: " + arrayInitExpr.getChildren());
+        for (JmmNode child : arrayInitExpr.getChildren()) {
+            String childType = Utils.getOperandType(child, table, currentMethod);
+            System.out.println(childType);
+            if (childType == null || !childType.equals("int")) {
+                var message = String.format("Array initialization expects integers, but found '%s'", childType);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(arrayInitExpr),
+                        NodeUtils.getColumn(arrayInitExpr),
+                        message,
+                        null
+                ));
+            }
+        }
         return null;
     }
 }

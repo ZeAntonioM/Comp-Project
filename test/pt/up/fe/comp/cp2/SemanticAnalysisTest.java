@@ -177,7 +177,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInit.jmm"));
         TestUtils.noErrors(result);
-        System.out.println(result.getReports());
 
     }
 
@@ -187,7 +186,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong1.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 
     @Test
@@ -195,6 +193,5 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong2.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 }
