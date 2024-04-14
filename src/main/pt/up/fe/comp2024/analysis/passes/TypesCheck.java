@@ -21,6 +21,7 @@ public class TypesCheck extends AnalysisVisitor {
 
     private final Map<String, String> classAndSuperClass = new HashMap<>();
     private String currentMethod;
+    private Boolean methodIsStatic = false;
 
     @Override
     public void buildVisitor() {
@@ -31,10 +32,17 @@ public class TypesCheck extends AnalysisVisitor {
         addVisit(Kind.WHILE_STMT, this::visitCondition);
         addVisit(Kind.MEMBER_CALL_EXPR, this::visitMemberCallExpr);
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+        addVisit(Kind.VAR_DECL, this::visitVarDecl);
     }
+
+
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
+        methodIsStatic = method.get("isStatic").equals("true");
+        var returnType = table.getReturnType(currentMethod).getName();
+        method.put("type", returnType);
+
         return null;
     }
 
@@ -82,8 +90,6 @@ public class TypesCheck extends AnalysisVisitor {
         var assigned = assignStmt.getChildren().get(0);
         var value = assignStmt.getChildren().get(1);
 
-
-
         if (value.getKind().equals(Kind.NEW_ARRAY_EXPR.toString())) {
             var size = value.getChildren().get(0);
             var assignedType = Utils.getOperandType(size, table, currentMethod);
@@ -97,7 +103,37 @@ public class TypesCheck extends AnalysisVisitor {
                         null
                 ));
             }
-        } else {
+        }
+        else if (value.getKind().equals(Kind.SELF_EXPR.toString())){
+            if (methodIsStatic) {
+                var message = "Cannot use 'this' in a static method";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(assignStmt),
+                        NodeUtils.getColumn(assignStmt),
+                        message,
+                        null
+                ));
+            }
+
+            var assignedType = Utils.getOperandType(assigned, table, currentMethod);
+            var className = table.getClassName();
+            var superClassName = classAndSuperClass.get(className);
+
+            if (!(className.equals(assignedType) || (superClassName != null && superClassName.equals(assignedType)))){
+                var message = "Cannot assign 'this' to a variable of a different class";
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(assignStmt),
+                        NodeUtils.getColumn(assignStmt),
+                        message,
+                        null
+                ));
+            }
+
+
+        }
+        else {
             var assignedType = Utils.getOperandType(assigned, table, currentMethod);
             var valueType = Utils.getOperandType(value, table, currentMethod);
             var imports = table.getImports();
@@ -203,9 +239,24 @@ public class TypesCheck extends AnalysisVisitor {
                 boolean isVarargs = declaredParameters.stream()
                         .anyMatch(symbol -> symbol.getType().getName().equals("vararg"));
 
+                boolean moreThanOneVarargs = declaredParameters.stream()
+                        .filter(symbol -> symbol.getType().getName().equals("vararg"))
+                        .count() > 1;
+
+
 
                 if (isVarargs && !declaredParameters.isEmpty() && !declaredParameters.get(declaredParameters.size() - 1).getType().getName().equals("vararg")) {
                     var errorMessage = String.format("Method '%s' expects varargs to be the last parameter", methodName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(memberCallExpr),
+                            NodeUtils.getColumn(memberCallExpr),
+                            errorMessage,
+                            null
+                    ));
+                }
+                else if (moreThanOneVarargs) {
+                    var errorMessage = String.format("Method '%s' expects only one varargs parameter", methodName);
                     addReport(Report.newError(
                             Stage.SEMANTIC,
                             NodeUtils.getLine(memberCallExpr),
@@ -283,7 +334,22 @@ public class TypesCheck extends AnalysisVisitor {
             ));
         }
 
+        return null;
+    }
 
+    private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
+        var varChildren = varDecl.getChildren().get(0);
+
+        if (varChildren.get("isVararg").equals("true")) {
+            var errorMessage = "Varargs can only be used as parameters in method declarations";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(varDecl),
+                    NodeUtils.getColumn(varDecl),
+                    errorMessage,
+                    null
+            ));
+        }
 
 
         return null;
