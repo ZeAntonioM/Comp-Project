@@ -184,7 +184,7 @@ public class TypesCheck extends AnalysisVisitor {
         var isClassImported = importedClasses.contains(objectClassName);
 
 
-        if (superClass == null && !isClassImported) {
+        if (superClass == null && !isClassImported && table.getClassName().contains(objectClassName)) {
             if (!availableMethods.contains(methodName)) {
                 var errorMessage = String.format("Class '%s' does not contain a method '%s'", objectClassName, methodName);
                 addReport(Report.newError(
@@ -195,13 +195,25 @@ public class TypesCheck extends AnalysisVisitor {
                         null
                 ));
             }
+
             else {
                 var declaredParameters = table.getParameters(methodName);
-                System.out.println(declaredParameters);
-                boolean isVarargs = !declaredParameters.isEmpty() && declaredParameters.get(declaredParameters.size() - 1).getType().getName().equals("vararg");
+                boolean isVarargs = declaredParameters.stream()
+                        .anyMatch(symbol -> symbol.getType().getName().equals("vararg"));
 
+
+                if (isVarargs && !declaredParameters.isEmpty() && !declaredParameters.get(declaredParameters.size() - 1).getType().getName().equals("vararg")) {
+                    var errorMessage = String.format("Method '%s' expects varargs to be the last parameter", methodName);
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(memberCallExpr),
+                            NodeUtils.getColumn(memberCallExpr),
+                            errorMessage,
+                            null
+                    ));
+                }
                 // Check if the number of parameters is the same
-                if ((!isVarargs && declaredParameters.size() != parameters.size()) || (isVarargs && declaredParameters.size() > parameters.size() + 1)){
+                else if ((!isVarargs && declaredParameters.size() != parameters.size()) || (isVarargs && declaredParameters.size() > parameters.size() + 1)){
                     var errorMessage = String.format("Method '%s' expects %d parameters, but got %d", methodName, declaredParameters.size(), parameters.size());
                     addReport(Report.newError(
                             Stage.SEMANTIC,
@@ -258,6 +270,15 @@ public class TypesCheck extends AnalysisVisitor {
                         null
                 ));
             }
+        } else if (!isClassImported && !isSuperClassImported){
+            var errorMessage = String.format("Class '%s' is not imported", objectClassName);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(memberCallExpr),
+                    NodeUtils.getColumn(memberCallExpr),
+                    errorMessage,
+                    null
+            ));
         }
 
 

@@ -38,12 +38,10 @@ public class Utils {
             return returnType.getName() + (returnType.isArray() ? "[]" : "");
         }
         else {
-
             String operandName = operand.get("name");
             // Check if the operand is a parameter or local variable of the current method first
             for (Symbol parameter : table.getParameters(method)) {
                 if (parameter.getName().equals(operandName)) {
-                    System.out.println(parameter.getType().getName());
                     return parameter.getType().getName() + (parameter.getType().isArray() ? "[]" : "");
                 }
             }
@@ -60,6 +58,10 @@ public class Utils {
                 if (field.getName().equals(operandName)) {
                     return field.getType().getName() + (field.getType().isArray() ? "[]" : "");
                 }
+            }
+
+            if (!table.getImports().contains(operandName)) {
+                return operandName;
             }
         }
         return null;

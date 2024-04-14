@@ -39,12 +39,15 @@ import pt.up.fe.specs.util.SpecsIo;
     public void boolTimesInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/BoolTimesInt.jmm"));
         TestUtils.mustFail(result);
+
     }
 
     @Test
     public void arrayPlusInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayPlusInt.jmm"));
         TestUtils.mustFail(result);
+
+
     }
 
     @Test
@@ -60,7 +63,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
 
-
     }
 
     @Test
@@ -74,18 +76,21 @@ import pt.up.fe.specs.util.SpecsIo;
     public void objectAssignmentFail() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ObjectAssignmentFail.jmm"));
         TestUtils.mustFail(result);
+
     }
 
     @Test
     public void objectAssignmentPassExtends() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ObjectAssignmentPassExtends.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     @Test
     public void objectAssignmentPassImports() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ObjectAssignmentPassImports.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     @Test
@@ -106,6 +111,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void callToUndeclaredMethod() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToUndeclaredMethod.jmm"));
         TestUtils.mustFail(result);
+
     }
 
     @Test
@@ -121,6 +127,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToMethodAssumedInImport.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     @Test
@@ -128,6 +135,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleArguments.jmm"));
         TestUtils.mustFail(result);
+
     }
 
     @Test
@@ -135,6 +143,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleReturn.jmm"));
         TestUtils.mustFail(result);
+
     }
 
     @Test
@@ -142,6 +151,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/AssumeArguments.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     @Test
@@ -149,6 +159,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/Varargs.jmm"));
         TestUtils.noErrors(result);
+
     }
 
     //TODO
@@ -158,6 +169,7 @@ import pt.up.fe.specs.util.SpecsIo;
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/VarargsWrong.jmm"));
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
+
     }
 
     @Test

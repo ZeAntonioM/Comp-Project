@@ -8,7 +8,7 @@ class VarargsWrong {
         return a;
     }
 
-    public int varargs(boolean b,int... a) {
+    public int varargs(int... a, boolean b) {
         return a[0];
     }
 }
