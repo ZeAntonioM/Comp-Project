@@ -7,7 +7,7 @@ import pt.up.fe.comp2024.ast.Kind;
 
 public class Utils {
 
-    public static String getOperandType(JmmNode operand, SymbolTable table) {
+    public static String getOperandType(JmmNode operand, SymbolTable table, String method) {
 
         if (operand.getKind().equals(Kind.INTEGER_LITERAL.toString())) {
             return "int";
@@ -17,7 +17,7 @@ public class Utils {
         else if (operand.getKind().equals(Kind.PRECEDENT_EXPR.toString()) || operand.getKind().equals(Kind.BINARY_EXPR.toString())) {
             String type = null;
             for (JmmNode child : operand.getChildren()) {
-                String childType = getOperandType(child, table);
+                String childType = getOperandType(child, table, method);
                 if (childType != null) {
                     if (type == null) {
                         type = childType;
@@ -28,29 +28,40 @@ public class Utils {
                 }
             }
             return type;
+        } else if (operand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())){
+            String methodName = operand.get("id");
+
+            // Get the return type of the method from the symbol table
+            var returnType = table.getReturnType(methodName);
+
+            // Return the name of the return type
+            return returnType.getName() + (returnType.isArray() ? "[]" : "");
         }
         else {
+
             String operandName = operand.get("name");
-            // Check if the operand is a field
+            // Check if the operand is a parameter or local variable of the current method first
+            for (Symbol parameter : table.getParameters(method)) {
+                if (parameter.getName().equals(operandName)) {
+                    System.out.println(parameter.getType().getName());
+                    return parameter.getType().getName() + (parameter.getType().isArray() ? "[]" : "");
+                }
+            }
+
+            // Check if the operand is a local variable of the current method
+            for (Symbol localVariable : table.getLocalVariables(method)) {
+                if (localVariable.getName().equals(operandName)) {
+                    return localVariable.getType().getName() + (localVariable.getType().isArray() ? "[]" : "");
+                }
+            }
+
+            // If not found, check if the operand is a field
             for (Symbol field : table.getFields()) {
                 if (field.getName().equals(operandName)) {
                     return field.getType().getName() + (field.getType().isArray() ? "[]" : "");
                 }
             }
-
-            // Check if the operand is a parameter or local variable of the current method
-            for (String method : table.getMethods()) {
-
-                for (Symbol localVariable : table.getLocalVariables(method)) {
-                    if (localVariable.getName().equals(operandName)) {
-                        return localVariable.getType().getName() + (localVariable.getType().isArray() ? "[]" : "");
-                    }
-                }
-            }
-
         }
-
-
         return null;
     }
 }

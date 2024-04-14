@@ -16,18 +16,25 @@ import pt.up.fe.comp2024.ast.NodeUtils;
  */
 public class ArrayOperations extends AnalysisVisitor {
 
+    private String currentMethod;
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.ARRAY_REF_EXPR, this::visitArrayRefExpr);
         addVisit(Kind.ARRAY_INIT_EXPR, this::visitArrayInitExpr);
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
 
+    }
+
+    private Void visitMethodDecl(JmmNode methodDecl, SymbolTable table) {
+        currentMethod = methodDecl.get("name");
+        return null;
     }
 
     private Void visitArrayRefExpr(JmmNode arrayRefExpr, SymbolTable table) {
         var array = arrayRefExpr.getChildren().get(0);
-        var arrayType = Utils.getOperandType(array, table);
-        if (arrayType != null && !arrayType.contains("[]")) {
+        var arrayType = Utils.getOperandType(array, table, currentMethod);
+        if (arrayType != null && !arrayType.contains("[]") && !arrayType.equals("vararg")) {
             var message = String.format("Cannot perform array access on a non-array variable '%s'", array.get("name"));
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -39,7 +46,7 @@ public class ArrayOperations extends AnalysisVisitor {
         }
 
         var index = arrayRefExpr.getChildren().get(1);
-        var indexType = Utils.getOperandType(index, table);
+        var indexType = Utils.getOperandType(index, table, currentMethod);
 
         if (indexType != null && !indexType.equals("int")) {
             var message = String.format("Array index must be an integer, but found '%s'", indexType);

@@ -20,6 +20,7 @@ import java.util.Objects;
 public class TypesCheck extends AnalysisVisitor {
 
     private final Map<String, String> classAndSuperClass = new HashMap<>();
+    private String currentMethod;
 
     @Override
     public void buildVisitor() {
@@ -29,6 +30,12 @@ public class TypesCheck extends AnalysisVisitor {
         addVisit(Kind.CLASS_DECL_RULE, this::visitClassDeclRule);
         addVisit(Kind.WHILE_STMT, this::visitCondition);
         addVisit(Kind.MEMBER_CALL_EXPR, this::visitMemberCallExpr);
+        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
+    }
+
+    private Void visitMethodDecl(JmmNode method, SymbolTable table) {
+        currentMethod = method.get("name");
+        return null;
     }
 
 
@@ -37,10 +44,10 @@ public class TypesCheck extends AnalysisVisitor {
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
 
-
         // Initialize the types of the operands
-        String leftType = Utils.getOperandType(leftOperand, table);
-        String rightType = Utils.getOperandType(rightOperand, table);
+        String leftType = Utils.getOperandType(leftOperand, table, currentMethod);
+        String rightType = Utils.getOperandType(rightOperand, table, currentMethod);
+
 
         leftOperand.put("type", leftType);
         rightOperand.put("type", rightType);
@@ -77,7 +84,7 @@ public class TypesCheck extends AnalysisVisitor {
 
         if (value.getKind().equals(Kind.NEW_ARRAY_EXPR.toString())) {
             var size = value.getChildren().get(0);
-            var assignedType = Utils.getOperandType(size, table);
+            var assignedType = Utils.getOperandType(size, table, currentMethod);
             if (!assignedType.equals("int")) {
                 var message = String.format("Cannot assign '%s' as the size of the array", size.get("bool"));
                 addReport(Report.newError(
@@ -89,8 +96,8 @@ public class TypesCheck extends AnalysisVisitor {
                 ));
             }
         } else {
-            var assignedType = Utils.getOperandType(assigned, table);
-            var valueType = Utils.getOperandType(value, table);
+            var assignedType = Utils.getOperandType(assigned, table, currentMethod);
+            var valueType = Utils.getOperandType(value, table, currentMethod);
             var imports = table.getImports();
 
             // Check if assignedType and valueType are not null
@@ -130,7 +137,7 @@ public class TypesCheck extends AnalysisVisitor {
 
     private Void visitCondition(JmmNode conditionExpr, SymbolTable table) {
         var condition = conditionExpr.getChildren().get(0);
-        String conditionType = Utils.getOperandType(condition, table);
+        String conditionType = Utils.getOperandType(condition, table, currentMethod);
         if (!Objects.equals(conditionType, "boolean")) {
             var message = String.format("Condition must be a boolean expression, but found '%s'", conditionType);
             addReport(Report.newError(
@@ -156,11 +163,20 @@ public class TypesCheck extends AnalysisVisitor {
         var parameters = memberCallExpr.getChildren().subList(1, memberCallExpr.getChildren().size());
 
         // Determine the type of the object
-        var objectClassName = Utils.getOperandType(objectNode, table);
+        String objectClassName;
+        if (objectNode.getKind().equals(Kind.SELF_EXPR.toString())) {
+            // If the object is 'this', the class name is the current class
+            objectClassName = table.getClassName();
+        } else {
+            objectClassName = Utils.getOperandType(objectNode, table, currentMethod);
+        }
 
         // Get the list of methods and imports from the symbol table
         var availableMethods = table.getMethods();
         var importedClasses = table.getImports();
+
+        // Get the return type of the method
+        var returnType = table.getReturnType(currentMethod).getName();
 
         // Check if the object's class or its superclass is imported
         var superClass = classAndSuperClass.get(objectClassName);
@@ -181,9 +197,22 @@ public class TypesCheck extends AnalysisVisitor {
             }
             else {
                 var declaredParameters = table.getParameters(methodName);
+                System.out.println(declaredParameters);
+                boolean isVarargs = !declaredParameters.isEmpty() && declaredParameters.get(declaredParameters.size() - 1).getType().getName().equals("vararg");
+
                 // Check if the number of parameters is the same
-                if (parameters.size() != declaredParameters.size()) {
+                if ((!isVarargs && declaredParameters.size() != parameters.size()) || (isVarargs && declaredParameters.size() > parameters.size() + 1)){
                     var errorMessage = String.format("Method '%s' expects %d parameters, but got %d", methodName, declaredParameters.size(), parameters.size());
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            NodeUtils.getLine(memberCallExpr),
+                            NodeUtils.getColumn(memberCallExpr),
+                            errorMessage,
+                            null
+                    ));
+                }
+                else if (!returnType.equals(table.getReturnType(methodName).getName())) {
+                    var errorMessage = String.format("Method '%s' expects a return type of '%s', but got '%s'", methodName, table.getReturnType(methodName).getName(), returnType);
                     addReport(Report.newError(
                             Stage.SEMANTIC,
                             NodeUtils.getLine(memberCallExpr),
@@ -195,8 +224,15 @@ public class TypesCheck extends AnalysisVisitor {
                 else {
                     // Check if the types of the parameters are the same
                     for (int i = 0; i < parameters.size(); i++) {
-                        var parameterType = Utils.getOperandType(parameters.get(i), table);
-                        var declaredParameterType = declaredParameters.get(i).getType().getName();
+                        var parameterType = Utils.getOperandType(parameters.get(i), table, currentMethod);
+                        String declaredParameterType;
+
+                        if (isVarargs && i >= declaredParameters.size() - 1) {
+                            declaredParameterType = "int";
+                        } else {
+                            declaredParameterType = declaredParameters.get(i).getType().getName();
+                        }
+
                         if (!Objects.equals(parameterType, declaredParameterType)) {
                             var errorMessage = String.format("Method '%s' expects parameter %d to be of type '%s', but got '%s'", methodName, i + 1, declaredParameterType, parameterType);
                             addReport(Report.newError(
@@ -223,6 +259,9 @@ public class TypesCheck extends AnalysisVisitor {
                 ));
             }
         }
+
+
+
 
         return null;
     }
