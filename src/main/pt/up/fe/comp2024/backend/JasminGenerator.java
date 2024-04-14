@@ -41,6 +41,7 @@ public class JasminGenerator {
 
         this.generators = new FunctionClassMap<>();
         generators.put(ClassUnit.class, this::generateClassUnit);
+        generators.put(Field.class, this::generateField);
         generators.put(Method.class, this::generateMethod);
         generators.put(AssignInstruction.class, this::generateAssign);
         generators.put(SingleOpInstruction.class, this::generateSingleOp);
@@ -93,11 +94,30 @@ public class JasminGenerator {
             code.append(defaultConstructor);
 */
 
+        // generate code for fields
+        for (var field : ollirResult.getOllirClass().getFields()) {
+            code.append(generators.apply(field));
+        }
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
             code.append(generators.apply(method));
         }
+
+        return code.toString();
+    }
+
+    private String generateField(Field field) {
+        var code = new StringBuilder();
+
+        var modifier = field.getFieldAccessModifier() != AccessModifier.DEFAULT ?
+                field.getFieldAccessModifier().name().toLowerCase() + " " :
+                "";
+
+        var fieldName = field.getFieldName();
+        var fieldType = this.getType(field.getFieldType().getTypeOfElement());
+
+        code.append(".field ").append(modifier).append(fieldName).append(" ").append(fieldType).append(NL);
 
         return code.toString();
     }
@@ -158,8 +178,12 @@ public class JasminGenerator {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
-        // TODO: Hardcoded for int type, needs to be expanded
-        code.append("istore ").append(reg).append(NL);
+        var type = assign.getTypeOfAssign().getTypeOfElement();
+
+        switch (type) {
+            case INT32, BOOLEAN -> code.append("istore ").append(reg).append(NL);
+            case ARRAYREF, OBJECTREF -> code.append("astore ").append(reg).append(NL);
+        }
 
         return code.toString();
     }
