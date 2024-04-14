@@ -116,7 +116,7 @@ public class JmmSymbolTableBuilder {
                 boolean isArray = typeNode.get("isArray").equals("true");
                 boolean isVararg = typeNode.get("isVararg").equals("true");
 
-                if (isVararg && type.equals("int")) {
+                if (isVararg && !isArray && type.equals("int") && i == paramsNodes.size() - 1) {
                     params.add(new Symbol(new Type("vararg", false), paramName));
                     continue;
                 }
