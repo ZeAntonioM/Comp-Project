@@ -73,11 +73,16 @@ public class JasminGenerator {
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
 
-        // TODO: Hardcoded to Object, needs to be expanded
-        code.append(".super java/lang/Object").append(NL);
+        if (ollirResult.getOllirClass().getSuperClass() == null) {
+            code.append(".super java/lang/Object").append(NL).append(NL);
+        }
+        else {
+            code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL).append(NL);
+        }
 
-        // generate a single constructor method
-        var defaultConstructor = """
+/*
+            // generate a single constructor method
+            var defaultConstructor = """
                 ;default constructor
                 .method public <init>()V
                     aload_0
@@ -85,24 +90,17 @@ public class JasminGenerator {
                     return
                 .end method
                 """;
-        code.append(defaultConstructor);
+            code.append(defaultConstructor);
+*/
+
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
-
-            // Ignore constructor, since there is always one constructor
-            // that receives no arguments, and has been already added
-            // previously
-            if (method.isConstructMethod()) {
-                continue;
-            }
-
             code.append(generators.apply(method));
         }
 
         return code.toString();
     }
-
 
     private String generateMethod(Method method) {
 
@@ -118,8 +116,10 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        // TODO: Hardcoded param types and return type, needs to be expanded
-        code.append("\n.method ").append(modifier).append(methodName).append("(I)I").append(NL);
+        var params = this.getMethodParams(method.getParams());
+        var returnType = this.getType(method.getReturnType().getTypeOfElement());
+
+        code.append("\n.method ").append(modifier).append(methodName).append("(").append(params).append(")").append(returnType).append(NL);
 
         // Add limits
         code.append(TAB).append(".limit stack 99").append(NL);
@@ -207,5 +207,48 @@ public class JasminGenerator {
 
         return code.toString();
     }
+
+
+    //TODO: Implement this method
+    private String getMethodParams(List<Element> params) {
+        return new StringBuilder().toString();
+    }
+/*
+        var ret = new StringBuilder();
+        for (var param : params) {
+
+            ElementType type = param.getType().getTypeOfElement();
+            switch (type) {
+
+                case ARRAYREF:
+                    ret.append("[");
+                    ret.append(getType(((ArrayRefType) param.getType()).getBaseType()));
+                    break;
+                case OBJECTREF:
+                    ret.append("L");
+                    ret.append(((ObjectRefType) param.getType()).getClassName());
+                    ret.append(";");
+                    break;
+                case default:
+                    ret.append(getType(type));
+                    break;
+
+            }
+
+        }
+
+        return ret.toString();
+    }*/
+
+    private String getType(ElementType type) {
+        return switch (type) {
+            case INT32 -> "I";
+            case BOOLEAN -> "Z";
+            case VOID -> "V";
+            case STRING -> "Ljava/lang/String;";
+            default -> null;
+        };
+    }
+
 
 }
