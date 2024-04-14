@@ -1,6 +1,7 @@
 package pt.up.fe.comp2024.optimization;
 
 import org.junit.Test;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
@@ -35,8 +36,13 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(PRECEDENT_EXPR, this::visitPrecedentExpr);
         addVisit(BOOL_EXPR, this::visitBoolExpr);
         addVisit(NEG_EXPR, this::visitNegExpr);
+        addVisit(SELF_EXPR, this::visitSelfExpr);
 
         setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitSelfExpr(JmmNode node, Void unused) {
+        return new OllirExprResult("this");
     }
 
     private OllirExprResult visitNegExpr(JmmNode node, Void unused) {
@@ -82,17 +88,19 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         StringBuilder code = new StringBuilder();
 
         var parent = node.getParent();
-        var type = OptUtils.toOllirType(new Type("void", false));
-        if (ASSIGN_STMT.check(parent)){
-            type = OptUtils.toOllirType(parent);
+        String type = OptUtils.toOllirType(new Type("void", false));
+        if (ASSIGN_STMT.check(parent)) {
+            type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
         }
 
         var lhs = visit(node.getJmmChild(0));
+        var lhs_code = lhs.getCode();
 
-        code.append("invokestatic(").append(lhs.getCode()).append(", \"").append(node.get("name")).append("\"");
+        //TODO: make this work when I have type annotation
+        code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
 
 
-        for (int i = 1; i < node.getNumChildren(); i++){
+        for (int i = 1; i < node.getNumChildren(); i++) {
             code.append(", ");
             code.append(visit(node.getJmmChild(i)).getCode());
         }
@@ -101,7 +109,6 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         return new OllirExprResult(code.toString());
     }
-
 
     private OllirExprResult visitInteger(JmmNode node, Void unused) {
         var intType = new Type(TypeUtils.getIntTypeName(), false);
