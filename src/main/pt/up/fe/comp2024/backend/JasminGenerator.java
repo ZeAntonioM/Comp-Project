@@ -49,6 +49,7 @@ public class JasminGenerator {
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
+        generators.put(CallInstruction.class, this::generateCallInstruction);
         generators.put(ReturnInstruction.class, this::generateReturn);
     }
 
@@ -81,19 +82,6 @@ public class JasminGenerator {
         else {
             code.append(".super ").append(ollirResult.getOllirClass().getSuperClass()).append(NL).append(NL);
         }
-
-/*
-            // generate a single constructor method
-            var defaultConstructor = """
-                ;default constructor
-                .method public <init>()V
-                    aload_0
-                    invokespecial java/lang/Object/<init>()V
-                    return
-                .end method
-                """;
-            code.append(defaultConstructor);
-*/
 
         // generate code for fields
         for (var field : ollirResult.getOllirClass().getFields()) {
@@ -140,13 +128,16 @@ public class JasminGenerator {
         var params = this.getMethodParams(method.getParams());
         var returnType = this.getType(method.getReturnType().getTypeOfElement());
 
-        code.append("\n.method ").append(modifier).append(methodName).append("(").append(params).append(")").append(returnType).append(NL);
+        code.append("\n.method ").append(modifier);
+        code.append((method.isConstructMethod() ? "<init>" : methodName));
+        code.append("(").append(params).append(")").append(returnType).append(NL);
 
         // Add limits
         code.append(TAB).append(".limit stack 99").append(NL);
         code.append(TAB).append(".limit locals 99").append(NL);
 
         for (var inst : method.getInstructions()) {
+            System.out.println(inst.getClass());
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
@@ -182,8 +173,8 @@ public class JasminGenerator {
         var type = assign.getTypeOfAssign().getTypeOfElement();
 
         switch (type) {
-            case INT32, BOOLEAN -> code.append("istore ").append(reg).append(NL);
-            case ARRAYREF, OBJECTREF -> code.append("astore ").append(reg).append(NL);
+            case INT32, BOOLEAN -> code.append("istore_").append(reg).append(NL);
+            case ARRAYREF, OBJECTREF -> code.append("astore_").append(reg).append(NL);
         }
 
         return code.toString();
@@ -200,7 +191,7 @@ public class JasminGenerator {
     private String generateOperand(Operand operand) {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
-        return "iload " + reg + NL;
+        return "iload_" + reg + NL;
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -228,6 +219,16 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String generateCallInstruction(CallInstruction callInst) {
+        var code = new StringBuilder();
+
+        var instType = callInst.getReturnType().getTypeOfElement();
+
+
+
+        return code.toString();
+    }
+
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
@@ -238,6 +239,7 @@ public class JasminGenerator {
         switch (type) {
             case INT32, BOOLEAN -> code.append("ireturn").append(NL);
             case ARRAYREF, OBJECTREF -> code.append("areturn").append(NL);
+            case VOID -> code.append("return").append(NL);
         }
 
         return code.toString();
