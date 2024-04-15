@@ -192,7 +192,7 @@ public class TypesCheck extends AnalysisVisitor {
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
         // Extract method name from the member call expression
-        var methodName = memberCallExpr.get("id");
+        var methodName = memberCallExpr.get("name");
 
         // Get the first child of the member call expression, which should be the object on which the method is called
         var objectNode = memberCallExpr.getChildren().get(0);

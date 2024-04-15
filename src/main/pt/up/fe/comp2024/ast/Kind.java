@@ -39,8 +39,7 @@ public enum Kind {
     BOOL_EXPR,
     MEMBER_CALL_EXPR,
     TYPE,
-    SELF_EXPR,
-    MEMBER_CALL_EXPR;
+    SELF_EXPR;
 
 
     private static final Set<Kind> STATEMENTS = Set.of( ASSIGN_STMT, IF_ELSE_STMT, WHILE_STMT, EXPR_STMT, RETURN_STMT);
@@ -101,7 +100,7 @@ public enum Kind {
      * @return
      */
     public boolean check(JmmNode node) {
-        return node.getKind().equals(getNodeName());
+        return node.isInstance(this);
     }
 
     /**

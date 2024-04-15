@@ -8,10 +8,6 @@ class CompileAssignment {
         int a;
         int b;
 
-        if (a && b){
-            return 1;
-        }
-
         b = 2;
         a = b;
 

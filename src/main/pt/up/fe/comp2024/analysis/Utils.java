@@ -29,7 +29,7 @@ public class Utils {
             }
             return type;
         } else if (operand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())){
-            String methodName = operand.get("id");
+            String methodName = operand.get("name");
 
             // Get the return type of the method from the symbol table
             var returnType = table.getReturnType(methodName);
