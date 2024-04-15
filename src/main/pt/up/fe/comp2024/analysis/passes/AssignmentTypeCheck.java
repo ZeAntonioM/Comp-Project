@@ -17,7 +17,6 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
-        addVisit(Kind.CLASS_DECL_RULE, this::visitClassDecl);
     }
 
 
@@ -30,10 +29,10 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
 
         var className = table.getClassName();
         var superClass = table.getSuper();
+        var imports = table.getImports();
 
 
-
-        if (!Objects.equals(assigneeType, valueType) && !(valueType.equals(className) && assigneeType.equals(superClass))) {
+        if (!Objects.equals(assigneeType, valueType) && !(valueType.equals(className) && assigneeType.equals(superClass)) && !imports.contains(valueType)) {
             var message = String.format("Cannot assign a value of type '%s' to a variable of type '%s'", valueType, assigneeType);
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -47,7 +46,4 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
         return null;
     }
 
-    private Void visitClassDecl(JmmNode classDecl, SymbolTable table) {
-        return null;
-    }
 }
