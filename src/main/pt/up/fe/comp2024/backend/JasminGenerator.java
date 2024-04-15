@@ -56,7 +56,6 @@ public class JasminGenerator {
         generators.put(CallInstruction.class, this::generateCallInstruction);
         //generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
         //generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
-        //generators.put(UnaryOpInstruction.class, this::generateUnaryOp);
         generators.put(ReturnInstruction.class, this::generateReturn);
     }
 
@@ -97,7 +96,6 @@ public class JasminGenerator {
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
-
             code.append(generators.apply(method));
         }
 
@@ -136,12 +134,17 @@ public class JasminGenerator {
 
         var methodName = method.getMethodName();
 
-        var params = this.getMethodParams(method.getParams());
         var returnType = this.getType(method.getReturnType().getTypeOfElement());
 
         code.append("\n.method ").append(modifier);
         code.append((method.isConstructMethod() ? "<init>" : methodName));
-        code.append("(").append(params).append(")").append(returnType).append(NL);
+        code.append("(");
+
+        for (var param: method.getParams()) {
+            code.append(getType(param.getType().getTypeOfElement()));
+        }
+
+        code.append(")").append(returnType).append(NL);
 
         // Add limits
         code.append(TAB).append(".limit stack 99").append(NL);
@@ -153,6 +156,19 @@ public class JasminGenerator {
 
             code.append(instCode);
         }
+
+        //check return instruction
+        if (method.getInstructions().isEmpty() ||
+            (
+                !(method.getInstructions().get(method.getInstructions().size() - 1) instanceof ReturnInstruction)
+                &&
+                (method.getReturnType().getTypeOfElement() == ElementType.VOID))
+            )
+        {
+            code.append(TAB).append("return").append(NL);
+        }
+
+
 
         code.append(".end method\n");
 
@@ -269,48 +285,53 @@ public class JasminGenerator {
     private String invokeSpecial(CallInstruction callInst) {
         var code = new StringBuilder();
 
-        var method = callInst.getMethodName();
         var operands = callInst.getOperands();
 
         switch(operands.get(0).getType().getTypeOfElement()) {
+
             case THIS:
                 code.append("aload_0").append(NL);
                 break;
             case OBJECTREF, ARRAYREF:
-                code.append("aload_").append(currentMethod.getVarTable().get(operands.get(0).toString()).getVirtualReg()).append(NL);
+                code.append("aload_").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
                 break;
             case INT32, BOOLEAN:
-                code.append("iload_").append(currentMethod.getVarTable().get(operands.get(0).toString()).getVirtualReg()).append(NL);
+                code.append("iload_").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
                 break;
         }
 
         code.append("invokespecial ");
 
-        if (operands.get(0).getType().getTypeOfElement() == ElementType.THIS) { 
+        if (operands.get(0).getType().getTypeOfElement() == ElementType.THIS) {
 
             if (currentMethod.getOllirClass().getSuperClass() == null) {
-                code.append("java/lang/Object/<init>()");
+                code.append("java/lang/Object");
             }
             else {
                 var className = currentMethod.getOllirClass().getSuperClass();
-                code.append(className).append("/<init>");
-
-                code.append("(");
-
-                for (int i = 1; i < operands.size(); i++) {
-                    code.append(getType(operands.get(i).getType().getTypeOfElement()));
-                }
-
-                code.append(")");
-
+                code.append(className);
             }
+
+            code.append("/<init>(");
+
+            for (int i = 2; i < operands.size(); i++) {
+                code.append(getType(operands.get(i).getType().getTypeOfElement()));
+            }
+
+            code.append(")");
+
         }
         else {
-            var className = currentMethod.getClass().getName();
-            code.append(className).append("/").append(method);
+
+            //TODO change this method to get the class name, since it is wrong
+            var className = ((Operand) operands.get(0));
+
+            code.append(className).append("/").append("<init>");
             code.append("(");
 
-            for (int i = 1; i < operands.size(); i++) {
+            for (int i = 2; i < operands.size(); i++) {
+
+                code.append(operands.size()).append(NL);
                 code.append(getType(operands.get(i).getType().getTypeOfElement()));
             }
 
@@ -318,8 +339,6 @@ public class JasminGenerator {
         }
 
         code.append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
-
-        code.append("return");
 
         return code.toString();
     }
@@ -373,39 +392,14 @@ public class JasminGenerator {
         return code.toString();
     }
 
-
-    private String getMethodParams(List<Element> params) {
-        var ret = new StringBuilder();
-
-        for (var param : params) {
-
-            ElementType type = param.getType().getTypeOfElement();
-            switch (type) {
-                case ARRAYREF:
-                    ret.append("[Ljava/lang/String;");
-                    break;
-                case OBJECTREF:
-                    ret.append("L");
-                    ret.append(param.getType().getClass().getName());
-                    ret.append(";");
-                    break;
-                default:
-                    ret.append(getType(type));
-                    break;
-
-            }
-
-        }
-
-        return ret.toString();
-    }
-
     private String getType(ElementType type) {
         return switch (type) {
             case INT32 -> "I";
             case BOOLEAN -> "Z";
             case VOID -> "V";
             case STRING -> "Ljava/lang/String;";
+            case ARRAYREF -> "[Ljava/lang/String;";
+            case OBJECTREF -> "L";
             default -> null;
         };
     }
