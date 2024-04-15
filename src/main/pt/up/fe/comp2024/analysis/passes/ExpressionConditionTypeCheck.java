@@ -8,7 +8,6 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
-import java.util.Objects;
 
 public class ExpressionConditionTypeCheck extends AnalysisVisitor {
 
