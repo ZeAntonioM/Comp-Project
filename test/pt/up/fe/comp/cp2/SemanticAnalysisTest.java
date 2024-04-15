@@ -49,7 +49,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void arrayPlusInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayPlusInt.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test arrayPlusInt" + result.getReports());
+        //System.out.println("Test arrayPlusInt" + result.getReports());
     }
 
     @Test
@@ -78,7 +78,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void objectAssignmentFail() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ObjectAssignmentFail.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test objectAssignmentFail" + result.getReports());
+        //System.out.println("Test objectAssignmentFail" + result.getReports());
 
     }
 
@@ -117,7 +117,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void callToUndeclaredMethod() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToUndeclaredMethod.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test callToUndeclaredMethod" + result.getReports());
+        //System.out.println("Test callToUndeclaredMethod" + result.getReports());
 
     }
 
@@ -126,7 +126,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToMethodAssumedInExtends.jmm"));
         TestUtils.noErrors(result);
-        System.out.println("Test callToMethodAssumedInExtends" + result.getReports());
+        //System.out.println("Test callToMethodAssumedInExtends" + result.getReports());
 
     }
 
@@ -135,7 +135,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/CallToMethodAssumedInImport.jmm"));
         TestUtils.noErrors(result);
-        System.out.println("Test callToMethodAssumedInImport" + result.getReports());
+        //System.out.println("Test callToMethodAssumedInImport" + result.getReports());
 
     }
 
@@ -144,7 +144,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleArguments.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test incompatibleArguments" + result.getReports());
+        //System.out.println("Test incompatibleArguments" + result.getReports());
 
     }
 
@@ -153,7 +153,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleReturn.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test incompatibleReturn" + result.getReports());
+        //System.out.println("Test incompatibleReturn" + result.getReports());
 
     }
 
@@ -162,7 +162,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/AssumeArguments.jmm"));
         TestUtils.noErrors(result);
-        System.out.println("Test assumeArguments" + result.getReports());
+        //System.out.println("Test assumeArguments" + result.getReports());
 
     }
 
@@ -171,7 +171,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/Varargs.jmm"));
         TestUtils.noErrors(result);
-        System.out.println("Test varargs" + result.getReports());
+        //System.out.println("Test varargs" + result.getReports());
     }
 
     @Test
@@ -179,7 +179,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/VarargsWrong.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test varargsWrong" + result.getReports());
+        //System.out.println("Test varargsWrong" + result.getReports());
 
     }
 
@@ -188,7 +188,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInit.jmm"));
         TestUtils.noErrors(result);
-        System.out.println("Test arrayInit" + result.getReports());
+        //System.out.println("Test arrayInit" + result.getReports());
 
     }
 
@@ -197,7 +197,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong1.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test arrayInitWrong1" + result.getReports());
+        //System.out.println("Test arrayInitWrong1" + result.getReports());
 
     }
 
@@ -206,7 +206,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong2.jmm"));
         TestUtils.mustFail(result);
-        System.out.println("Test arrayInitWrong2" + result.getReports());
+        //System.out.println("Test arrayInitWrong2" + result.getReports());
 
     }
 }

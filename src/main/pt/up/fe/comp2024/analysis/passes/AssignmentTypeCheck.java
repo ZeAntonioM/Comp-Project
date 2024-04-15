@@ -47,9 +47,12 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
             return null;
         }
 
+        //System.out.println(value.getChildren());
+
         if (Objects.equals(assigneeType, valueType)
                 || imports.contains(valueType) && imports.contains(assigneeType)
                 || (!superClass.isEmpty() && superClass.equals(valueType) && imports.contains(valueType))
+                || (imports.contains(valueType))
                 || (!superClass.isEmpty() && superClass.equals(assigneeType) && imports.contains(assigneeType))
         ) {
             assignStmt.put("type", assigneeType);
@@ -64,7 +67,6 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
             ));
         }
 
-        System.out.println("AssignStmt: " + assignStmt.get("type"));
 
         return null;
     }

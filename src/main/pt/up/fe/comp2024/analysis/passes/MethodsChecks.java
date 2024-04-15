@@ -26,8 +26,6 @@ public class MethodsChecks extends AnalysisVisitor {
         var imports = table.getImports();
         var assigneeType = memberCallExpr.getChildren().get(0).get("type");
 
-
-
         if (!Objects.equals(memberCallExpr.get("type"), "invalid")) {
             return null;
         }
