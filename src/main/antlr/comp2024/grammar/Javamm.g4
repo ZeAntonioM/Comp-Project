@@ -34,6 +34,7 @@ INTEGER : [0] | ([1-9][0-9]*);
 BOOLEAN: 'true' | 'false';
 ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*;
 
+
 COMMENT : LCOM .*? RCOM -> skip;
 LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
 
@@ -99,20 +100,20 @@ paramDecl
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
-    | 'if' LPAREN expr* RPAREN stmt ('else' stmt) #IfElseStmt
-    | 'while' LPAREN expr* RPAREN stmt #WhileStmt
+    | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt
+    | 'while' LPAREN expr RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
     | RETURN expr SEMI #ReturnStmt
     | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
 expr
-    : LPAREN expr RPAREN #PrecendentExpr
+    : LPAREN expr RPAREN #PrecedentExpr
     | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
-    | expr '.' ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr '.' id=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
@@ -124,3 +125,4 @@ expr
     | bool=BOOLEAN #BoolExpr
     | (name=ID | name='main' | name='length') #VarRefExpr
     ;
+
