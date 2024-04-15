@@ -1,5 +1,6 @@
 package pt.up.fe.comp2024.backend;
 
+import com.sun.jdi.ObjectReference;
 import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.tree.TreeNode;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
@@ -211,9 +212,15 @@ public class JasminGenerator {
 
         // apply operation
         var op = switch (binaryOp.getOperation().getOpType()) {
-            case ADD -> "iadd";
-            case MUL -> "imul";
-            default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
+            case ADD -> "iadd ";
+            case MUL -> "imul ";
+            case SUB -> "isub ";
+            case DIV -> "idiv ";
+            case AND -> "iand ";
+            case GTH -> "if_icmpgt ";
+            case LTH -> "if_icmplt ";
+            default -> null;
+            //default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
         };
 
         code.append(op).append(NL);
@@ -224,36 +231,36 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        // TODO: Hardcoded to int return type, needs to be expanded
+        var type = returnInst.getReturnType().getTypeOfElement();
 
         code.append(generators.apply(returnInst.getOperand()));
-        code.append("ireturn").append(NL);
+
+        switch (type) {
+            case INT32, BOOLEAN -> code.append("ireturn").append(NL);
+            case ARRAYREF, OBJECTREF -> code.append("areturn").append(NL);
+        }
 
         return code.toString();
     }
 
 
-    //TODO: Implement this method
     private String getMethodParams(List<Element> params) {
-        return new StringBuilder().toString();
-    }
-/*
         var ret = new StringBuilder();
+
         for (var param : params) {
 
             ElementType type = param.getType().getTypeOfElement();
             switch (type) {
 
                 case ARRAYREF:
-                    ret.append("[");
-                    ret.append(getType(((ArrayRefType) param.getType()).getBaseType()));
+                    ret.append("[I;");
                     break;
                 case OBJECTREF:
                     ret.append("L");
-                    ret.append(((ObjectRefType) param.getType()).getClassName());
+                    ret.append(param.getType().getClass().getName());
                     ret.append(";");
                     break;
-                case default:
+                default:
                     ret.append(getType(type));
                     break;
 
@@ -262,7 +269,7 @@ public class JasminGenerator {
         }
 
         return ret.toString();
-    }*/
+    }
 
     private String getType(ElementType type) {
         return switch (type) {
