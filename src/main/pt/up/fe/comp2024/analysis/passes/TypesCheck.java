@@ -53,8 +53,8 @@ public class TypesCheck extends AnalysisVisitor {
         var rightOperand = binaryExpr.getChildren().get(1);
 
         // Initialize the types of the operands
-        String leftType = Utils.getOperandType(leftOperand, table, currentMethod);
-        String rightType = Utils.getOperandType(rightOperand, table, currentMethod);
+        String leftType = Utils.getType(leftOperand, table, currentMethod);
+        String rightType = Utils.getType(rightOperand, table, currentMethod);
 
 
         leftOperand.put("type", leftType);
@@ -92,7 +92,7 @@ public class TypesCheck extends AnalysisVisitor {
 
         if (value.getKind().equals(Kind.NEW_ARRAY_EXPR.toString())) {
             var size = value.getChildren().get(0);
-            var assignedType = Utils.getOperandType(size, table, currentMethod);
+            var assignedType = Utils.getType(size, table, currentMethod);
             if (!assignedType.equals("int")) {
                 var message = String.format("Cannot assign '%s' as the size of the array", size.get("bool"));
                 addReport(Report.newError(
@@ -116,7 +116,7 @@ public class TypesCheck extends AnalysisVisitor {
                 ));
             }
 
-            var assignedType = Utils.getOperandType(assigned, table, currentMethod);
+            var assignedType = Utils.getType(assigned, table, currentMethod);
             var className = table.getClassName();
             var superClassName = classAndSuperClass.get(className);
 
@@ -134,8 +134,8 @@ public class TypesCheck extends AnalysisVisitor {
 
         }
         else {
-            var assignedType = Utils.getOperandType(assigned, table, currentMethod);
-            var valueType = Utils.getOperandType(value, table, currentMethod);
+            var assignedType = Utils.getType(assigned, table, currentMethod);
+            var valueType = Utils.getType(value, table, currentMethod);
             var imports = table.getImports();
 
             // Check if assignedType and valueType are not null
@@ -175,7 +175,7 @@ public class TypesCheck extends AnalysisVisitor {
 
     private Void visitCondition(JmmNode conditionExpr, SymbolTable table) {
         var condition = conditionExpr.getChildren().get(0);
-        String conditionType = Utils.getOperandType(condition, table, currentMethod);
+        String conditionType = Utils.getType(condition, table, currentMethod);
         if (!Objects.equals(conditionType, "boolean")) {
             var message = String.format("Condition must be a boolean expression, but found '%s'", conditionType);
             addReport(Report.newError(
@@ -206,7 +206,7 @@ public class TypesCheck extends AnalysisVisitor {
             // If the object is 'this', the class name is the current class
             objectClassName = table.getClassName();
         } else {
-            objectClassName = Utils.getOperandType(objectNode, table, currentMethod);
+            objectClassName = Utils.getType(objectNode, table, currentMethod);
         }
 
         // Get the list of methods and imports from the symbol table
@@ -289,7 +289,7 @@ public class TypesCheck extends AnalysisVisitor {
                 else {
                     // Check if the types of the parameters are the same
                     for (int i = 0; i < parameters.size(); i++) {
-                        var parameterType = Utils.getOperandType(parameters.get(i), table, currentMethod);
+                        var parameterType = Utils.getType(parameters.get(i), table, currentMethod);
                         String declaredParameterType;
 
                         if (isVarargs && i >= declaredParameters.size() - 1) {

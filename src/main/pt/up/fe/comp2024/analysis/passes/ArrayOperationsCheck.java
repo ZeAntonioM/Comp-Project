@@ -9,12 +9,14 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.Objects;
+
 
 /**
  * Checks all the array operations
  *
  */
-public class ArrayOperations extends AnalysisVisitor {
+public class ArrayOperationsCheck extends AnalysisVisitor {
 
     private String currentMethod;
 
@@ -33,8 +35,12 @@ public class ArrayOperations extends AnalysisVisitor {
 
     private Void visitArrayRefExpr(JmmNode arrayRefExpr, SymbolTable table) {
         var array = arrayRefExpr.getChildren().get(0);
-        var arrayType = Utils.getOperandType(array, table, currentMethod);
-        if (arrayType != null && !arrayType.contains("[]") && !arrayType.equals("vararg")) {
+        var index = arrayRefExpr.getChildren().get(1);
+
+        var arrayType = array.get("type");
+        var indexType = index.get("type");
+
+        if (arrayType != null && !arrayType.equals("int[]")) {
             var message = String.format("Cannot perform array access on a non-array variable '%s'", array.get("name"));
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -44,9 +50,6 @@ public class ArrayOperations extends AnalysisVisitor {
                     null
             ));
         }
-
-        var index = arrayRefExpr.getChildren().get(1);
-        var indexType = Utils.getOperandType(index, table, currentMethod);
 
         if (indexType != null && !indexType.equals("int")) {
             var message = String.format("Array index must be an integer, but found '%s'", indexType);
@@ -64,18 +67,15 @@ public class ArrayOperations extends AnalysisVisitor {
     }
 
     private Void visitArrayInitExpr(JmmNode arrayInitExpr, SymbolTable table) {
-        for (JmmNode child : arrayInitExpr.getChildren()) {
-            String childType = Utils.getOperandType(child, table, currentMethod);
-            if (childType == null || !childType.equals("int")) {
-                var message = String.format("Array initialization expects integers, but found '%s'", childType);
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        NodeUtils.getLine(arrayInitExpr),
-                        NodeUtils.getColumn(arrayInitExpr),
-                        message,
-                        null
-                ));
-            }
+        if (!(Objects.equals(arrayInitExpr.get("type"), "int[]"))) {
+            var message = "Cannot initialize array with type not Int";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(arrayInitExpr),
+                    NodeUtils.getColumn(arrayInitExpr),
+                    message,
+                    null
+            ));
         }
         return null;
     }

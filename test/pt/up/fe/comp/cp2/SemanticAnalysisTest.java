@@ -35,7 +35,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IntPlusObject.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test intPlusObject" + result.getReports());
-
     }
 
 
@@ -44,7 +43,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/BoolTimesInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test boolTimesInt" + result.getReports());
-
     }
 
     @Test
@@ -52,8 +50,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayPlusInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayPlusInt" + result.getReports());
-
-
     }
 
     @Test
@@ -61,16 +57,13 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayAccessOnInt" + result.getReports());
-
     }
-
 
     @Test
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayIndexNotInt" + result.getReports());
-
     }
 
     @Test
@@ -109,7 +102,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void intInIfCondition() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IntInIfCondition.jmm"));
         TestUtils.mustFail(result);
-        //System.out.println("Test intInIfCondition" + result.getReports());
+        System.out.println("Test intInIfCondition" + result.getReports());
 
     }
 
@@ -152,7 +145,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IncompatibleArguments.jmm"));
         TestUtils.mustFail(result);
-        //System.out.println("Test incompatibleArguments" + result.getReports());
+        System.out.println("Test incompatibleArguments" + result.getReports());
 
     }
 
@@ -179,7 +172,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/Varargs.jmm"));
         TestUtils.noErrors(result);
-        //System.out.println("Test varargs" + result.getReports());
+        System.out.println("Test varargs" + result.getReports());
 
     }
 
@@ -197,7 +190,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInit.jmm"));
         TestUtils.noErrors(result);
-        //System.out.println("Test arrayInit" + result.getReports());
+        System.out.println("Test arrayInit" + result.getReports());
 
     }
 
@@ -206,7 +199,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong1.jmm"));
         TestUtils.mustFail(result);
-        //System.out.println("Test arrayInitWrong1" + result.getReports());
+        System.out.println("Test arrayInitWrong1" + result.getReports());
 
     }
 
@@ -215,7 +208,7 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInitWrong2.jmm"));
         TestUtils.mustFail(result);
-        //System.out.println("Test arrayInitWrong2" + result.getReports());
+        System.out.println("Test arrayInitWrong2" + result.getReports());
 
     }
 }
