@@ -94,37 +94,37 @@ public class JmmSymbolTableBuilder {
 
         for (JmmNode method : children) {
 
-                String name = method.get("name");
+            String name = method.get("name");
 
-                List<Symbol> params = new ArrayList<>();
+            List<Symbol> params = new ArrayList<>();
 
-                if (name.equals("main")) {
-                    params.add(new Symbol(new Type("String", true), "args"));
-                    map.put(name, params);
+            if (name.equals("main")) {
+                params.add(new Symbol(new Type("String", true), "args"));
+                map.put(name, params);
+                continue;
+            }
+
+            List<JmmNode> paramsNodes = method.getChildren(PARAM_DECL);
+
+            for (int i = 0; i < paramsNodes.size(); i++) {
+                JmmNode paramNode = paramsNodes.get(i);
+                String paramName = paramNode.get("name");
+
+                JmmNode typeNode = paramNode.getChildren(TYPE).get(0);
+
+                String type = typeNode.get("name");
+                boolean isArray = typeNode.get("isArray").equals("true");
+                boolean isVararg = typeNode.get("isVararg").equals("true");
+
+                if (isVararg && type.equals("int")) {
+                    params.add(new Symbol(new Type("vararg", false), paramName));
                     continue;
                 }
 
-                List<JmmNode> paramsNodes = method.getChildren(PARAM_DECL);
+                params.add(new Symbol(new Type(type, isArray), paramName));
+            }
 
-                for (int i = 0; i < paramsNodes.size(); i++) {
-                    JmmNode paramNode = paramsNodes.get(i);
-                    String paramName = paramNode.get("name");
-
-                    JmmNode typeNode = paramNode.getChildren(TYPE).get(0);
-
-                    String type = typeNode.get("name");
-                    boolean isArray = typeNode.get("isArray").equals("true");
-                    boolean isVararg = typeNode.get("isVararg").equals("true");
-
-                    if (isVararg && !isArray && type.equals("int") && i == paramsNodes.size() - 1) {
-                        params.add(new Symbol(new Type("vararg", false), paramName));
-                        continue;
-                    }
-
-                    params.add(new Symbol(new Type(type, isArray), paramName));
-                }
-
-                map.put(name, params);
+            map.put(name, params);
         }
 
         return map;

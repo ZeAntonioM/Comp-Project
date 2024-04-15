@@ -34,6 +34,7 @@ INTEGER : [0] | ([1-9][0-9]*);
 BOOLEAN: 'true' | 'false';
 ID : ([a-z]|[A-Z]|'_'|'$') ([a-z]|[A-Z]|'_'|'$'|[0-9])*;
 
+
 COMMENT : LCOM .*? RCOM -> skip;
 LINECOMMENT : COM .*? ('\r')?'\n' -> skip;
 
@@ -99,8 +100,8 @@ paramDecl
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
-    | 'if' LPAREN expr* RPAREN stmt ('else' stmt)? #IfElseStmt //faltava o ? no else
-    | 'while' LPAREN expr* RPAREN stmt #WhileStmt
+    | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt //faltava o ? no else
+    | 'while' LPAREN expr RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
     | RETURN expr SEMI #ReturnStmt  //isto é necessário para poder haver varios returns num metodo
     | LCURLY ( stmt )* RCURLY #BlockStmt
@@ -113,14 +114,15 @@ expr
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
     | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
-    | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp1
-    | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp1
-    | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp1
-    | expr '.' 'length' #LengthExpr                                            //not for cp1
+    | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
+    | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp2
+    | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp2
+    | expr '.' 'length' #LengthExpr                                            //not for cp2
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | 'new' (name=ID | name='main' | name='length') LPAREN RPAREN #NewObjExpr
-    | (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr   //not for cp1
-    | value=INTEGER #IntegerLiteral 
+    //| (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr   //not for cp2
+    | value=INTEGER #IntegerLiteral
     | bool=BOOLEAN #BoolExpr
     | (name=ID | name='main' | name='length') #VarRefExpr
     ;
+
