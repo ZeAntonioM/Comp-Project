@@ -30,9 +30,31 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
         var superClass = table.getSuper();
         var imports = table.getImports();
 
+        if (valueType.equals("self")) {
+            valueType = className;
+        }
 
-        if (!Objects.equals(assigneeType, valueType) && !(valueType.equals(className) && assigneeType.equals(superClass)) && !imports.contains(valueType)) {
-            var message = String.format("Cannot assign a value of type '%s' to a variable of type '%s'", valueType, assigneeType);
+        if (assigneeType.equals("self")) {
+            var message = "Cannot assign to 'this'";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assignStmt),
+                    NodeUtils.getColumn(assignStmt),
+                    message,
+                    null
+            ));
+
+            return null;
+        }
+
+        if (Objects.equals(assigneeType, valueType)
+                || imports.contains(valueType) && imports.contains(assigneeType)
+                || (!superClass.isEmpty() && superClass.equals(valueType) && imports.contains(valueType))
+                || (!superClass.isEmpty() && superClass.equals(assigneeType) && imports.contains(assigneeType))
+        ) {
+            assignStmt.put("type", assigneeType);
+        } else {
+            var message = "Type mismatch in assignment statement";
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(assignStmt),
@@ -41,6 +63,8 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
                     null
             ));
         }
+
+        System.out.println("AssignStmt: " + assignStmt.get("type"));
 
         return null;
     }

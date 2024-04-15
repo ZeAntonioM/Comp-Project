@@ -15,6 +15,7 @@ public class ExpressionConditionTypeCheck extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.IF_ELSE_STMT, this::visitIfElseStmt);
+        addVisit(Kind.WHILE_STMT, this::visitWhileStmt);
 
     }
 
@@ -25,6 +26,21 @@ public class ExpressionConditionTypeCheck extends AnalysisVisitor {
                     Stage.SEMANTIC,
                     NodeUtils.getLine(ifElseStmt),
                     NodeUtils.getColumn(ifElseStmt),
+                    message,
+                    null
+            ));
+        }
+
+        return null;
+    }
+
+    private Void visitWhileStmt(JmmNode whileStmt, SymbolTable table) {
+        if(whileStmt.get("type").equals("invalid")){
+            var message = "Condition type must be a boolean expression.";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(whileStmt),
+                    NodeUtils.getColumn(whileStmt),
                     message,
                     null
             ));

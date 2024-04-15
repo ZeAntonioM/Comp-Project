@@ -18,20 +18,14 @@ import java.util.Objects;
  */
 public class ArrayOperationsCheck extends AnalysisVisitor {
 
-    private String currentMethod;
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.ARRAY_REF_EXPR, this::visitArrayRefExpr);
         addVisit(Kind.ARRAY_INIT_EXPR, this::visitArrayInitExpr);
-        addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
 
     }
 
-    private Void visitMethodDecl(JmmNode methodDecl, SymbolTable table) {
-        currentMethod = methodDecl.get("name");
-        return null;
-    }
 
     private Void visitArrayRefExpr(JmmNode arrayRefExpr, SymbolTable table) {
         var array = arrayRefExpr.getChildren().get(0);
@@ -40,7 +34,7 @@ public class ArrayOperationsCheck extends AnalysisVisitor {
         var arrayType = array.get("type");
         var indexType = index.get("type");
 
-        if (arrayType != null && !arrayType.equals("int[]")) {
+        if (arrayType != null && !(arrayType.equals("int[]") || arrayType.equals("vararg"))) {
             var message = String.format("Cannot perform array access on a non-array variable '%s'", array.get("name"));
             addReport(Report.newError(
                     Stage.SEMANTIC,

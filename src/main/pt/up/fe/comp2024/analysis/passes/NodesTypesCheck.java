@@ -8,10 +8,6 @@ import pt.up.fe.comp2024.ast.Kind;
 
 import java.util.Objects;
 
-/**
- * Checks if the operands of an operation have types compatible with the operation
- *
- */
 public class NodesTypesCheck extends AnalysisVisitor {
 
     private String currentMethod;
@@ -155,11 +151,14 @@ public class NodesTypesCheck extends AnalysisVisitor {
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
         var object = memberCallExpr.getChildren().get(0);
         var method = memberCallExpr.get("name");
-        var methodType = table.getReturnType(method).getName();
-
+        var methodType = table.getReturnType(method);
         visit(object, table);
 
-        memberCallExpr.put("type", Objects.requireNonNullElse(methodType, "invalid"));
+        if (methodType != null) {
+            memberCallExpr.put("type", methodType.getName());
+        } else {
+            memberCallExpr.put("type", "invalid");
+        }
 
         return null;
     }

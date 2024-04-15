@@ -18,6 +18,7 @@ public class Utils {
         // Check if the operand is a local variable of the current method
         for (Symbol localVariable : table.getLocalVariables(method)) {
             if (localVariable.getName().equals(operandName)) {
+                System.out.println("Found local variable: " + localVariable);
                 return localVariable.getType().getName() + (localVariable.getType().isArray() ? "[]" : "");
             }
         }
