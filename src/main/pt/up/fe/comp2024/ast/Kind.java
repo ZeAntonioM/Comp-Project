@@ -37,6 +37,7 @@ public enum Kind {
     NEW_ARRAY_EXPR,
     NEW_OBJ_EXPR,
     BOOL_EXPR,
+    MEMBER_CALL_EXPR,
     TYPE,
     SELF_EXPR,
     MEMBER_CALL_EXPR;

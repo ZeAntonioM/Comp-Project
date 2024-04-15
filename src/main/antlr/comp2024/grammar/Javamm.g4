@@ -44,8 +44,8 @@ program
     : (importDecl)* classDecl EOF
     ;
 
-importDecl
-    : 'import' name+=ID ( '.' name+=ID )* SEMI #ImportDeclRule
+importDecl locals [boolean isSubImport = false]
+    : 'import' name+=ID ( '.' name+=ID {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]
@@ -100,28 +100,28 @@ paramDecl
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
-    | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt
+    | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt //faltava o ? no else
     | 'while' LPAREN expr RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
-    | RETURN expr SEMI #ReturnStmt
+    | RETURN expr SEMI #ReturnStmt  //isto é necessário para poder haver varios returns num metodo
     | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
 expr
-    : LPAREN expr RPAREN #PrecedentExpr
+    : LPAREN expr RPAREN #PrecedentExpr  //removi o n para funcionar
     | '!' expr #NegExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
-    | expr '.' id=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
-    | expr LBRAC expr RBRAC #ArrayRefExpr
-    | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr
-    | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr
-    | expr '.' 'length' #LengthExpr
+    | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
+    | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp2
+    | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp2
+    | expr '.' 'length' #LengthExpr                                            //not for cp2
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | 'new' (name=ID | name='main' | name='length') LPAREN RPAREN #NewObjExpr
-    //| (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr
-    | value=INTEGER #IntegerLiteral 
+    //| (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr   //not for cp2
+    | value=INTEGER #IntegerLiteral
     | bool=BOOLEAN #BoolExpr
     | (name=ID | name='main' | name='length') #VarRefExpr
     ;
