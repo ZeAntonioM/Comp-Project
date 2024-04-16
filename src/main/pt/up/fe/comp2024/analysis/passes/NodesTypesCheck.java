@@ -2,10 +2,15 @@ package pt.up.fe.comp2024.analysis.passes;
 
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
+import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
+import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 
 public class NodesTypesCheck extends AnalysisVisitor {
@@ -33,6 +38,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         addVisit(Kind.SELF_EXPR, this::visitSelfExpr);
         addVisit(Kind.ARRAY_INIT_EXPR, this::visitArrayInitExpr);
         addVisit(Kind.EXPR_STMT, this::visitExprStmt);
+        addVisit(Kind.VAR_DECL, this::visitVarDecl);
     }
 
     private Void visitMethodCall(JmmNode methodCall, SymbolTable table) {
@@ -237,6 +243,13 @@ public class NodesTypesCheck extends AnalysisVisitor {
         exprStmt.put("type", expr.get("type"));
         return null;
     }
+
+    private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
+        varDecl.put("type", varDecl.getChildren().get(0).get("name"));
+        return null;
+    }
+
+
 
 
 
