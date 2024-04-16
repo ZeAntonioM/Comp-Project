@@ -158,6 +158,12 @@ public class NodesTypesCheck extends AnalysisVisitor {
         if (methodType != null) {
             memberCallExpr.put("type", methodType.getName());
         } else {
+            for (var i: table.getImports()){
+                if (i.equals(object.get("type"))){
+                    memberCallExpr.put("type",i);
+                    return null;
+                }
+            }
             memberCallExpr.put("type", "invalid");
         }
 

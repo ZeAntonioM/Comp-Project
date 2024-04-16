@@ -131,14 +131,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return id + typeCode;
     }
 
-    //TODO: WILL HAVE TYPE ANNOTATION
     private String visitMethodDecl(JmmNode node, Void unused) {
 
         StringBuilder code = new StringBuilder(".method ");
 
         boolean isPublic = NodeUtils.getBooleanAttribute(node, "isPublic", "false");
         boolean isStatic = NodeUtils.getBooleanAttribute(node, "isStatic", "false");
-        boolean isMain = node.getNumChildren() == 0;
+        boolean isMain = MAIN_FUNCTION.check(node);
 
         if (isPublic) {
             code.append("public ");
@@ -156,17 +155,18 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         // param
         var afterParam = 1;
         if (!isMain) {
-            if (PARAM_DECL.check(node.getJmmChild(1))) {
-                for (int i = 1; i < node.getNumChildren(); i++) {
-                    var child = node.getJmmChild(i); //param
-                    var paramCode = visit(child);
-                    code.append(paramCode);
-                    afterParam++;
-                    if (i == node.getNumChildren() - 1) break;
-                    code.append(COMMA);
-                    code.append(SPACE);
-                }
-                code.delete(code.length() - 2, code.length() );
+            var paramNode = node.getJmmChild(afterParam);
+            boolean toDelete = false;
+            while(PARAM_DECL.check(paramNode)) {
+                var paramCode = visit(paramNode);
+                code.append(paramCode);
+                code.append(", ");
+                afterParam++;
+                paramNode = node.getJmmChild(afterParam);
+                toDelete = true;
+            }
+            if(toDelete){
+                code.delete(code.length()-2, code.length());
             }
         }
 
@@ -176,7 +176,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var retType = OptUtils.toOllirType(new Type(node.get("type"), false));
         code.append(retType);
         code.append(L_BRACKET);
-        //code.append(NL);
 
         // rest of its children stmts
         for (int i = afterParam; i < node.getNumChildren(); i++) {

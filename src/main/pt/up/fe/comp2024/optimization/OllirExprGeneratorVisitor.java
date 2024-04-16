@@ -42,6 +42,10 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         setDefaultVisit(this::defaultVisit);
     }
     public String getClosestOccurrenceVariable(String variableName, String methodSignature) {
+        if (variableName.equals("this")){
+            return "class";
+        }
+
         for (Symbol s: table.getLocalVariables(methodSignature)){
             if (s.getName().equals(variableName)){
                 return "local";
@@ -69,7 +73,6 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
     }
 
     private OllirExprResult visitNewObjExpr(JmmNode node, Void unused) {
-        StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
         var tmp = OptUtils.getTemp();
@@ -138,6 +141,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         var parent = node.getParent();
         boolean isAssignStmt = ASSIGN_STMT.check(parent);
+        boolean isBinaryExpr = BINARY_EXPR.check(parent);
+        boolean checkForTmp = isAssignStmt || isBinaryExpr;
         var classMethodParent = node;
 
         while (!METHOD_DECL.check(classMethodParent)){
@@ -149,8 +154,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
         switch (occurs){
             case "local", "param":
-                if (isAssignStmt){
-                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE).append(lhs_code)
+                if (checkForTmp){
+                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
                     code.append(tmp);
                 }
@@ -161,7 +166,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             case "field":
                 computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                         .append("getfield(this, ").append(lhs_code).append(")").append(type).append(END_STMT);
-                if (isAssignStmt){
+                if (checkForTmp){
                     var tmp2 = OptUtils.getTemp() + type;
                     computation.append(tmp2).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
@@ -175,9 +180,21 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 type = OptUtils.toOllirType(new Type("void",true));
                 break;
+            case "class":
+                if (checkForTmp){
+                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                            .append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
+                    code.append(tmp);
+                }
+                else {
+                    code.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
+                }
+                type = OptUtils.toOllirType(table.getReturnType(node.get("name")));
+                break;
+
         }
 
-        if (isAssignStmt){
+        if (checkForTmp){
             for (int i = 1; i < node.getNumChildren(); i++) {
                 computation.append(", ");
                 computation.append(visit(node.getJmmChild(i)).getCode());
