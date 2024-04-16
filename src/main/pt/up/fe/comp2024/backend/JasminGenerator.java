@@ -54,8 +54,8 @@ public class JasminGenerator {
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
         generators.put(CallInstruction.class, this::generateCallInstruction);
-        //generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
-        //generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
+        generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
+        generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
         generators.put(ReturnInstruction.class, this::generateReturn);
     }
 
@@ -155,6 +155,11 @@ public class JasminGenerator {
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
             code.append(instCode);
+
+            if (inst instanceof CallInstruction && ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
+                code.append(TAB).append("pop").append(NL);
+            }
+
         }
 
         //check return instruction
@@ -199,8 +204,8 @@ public class JasminGenerator {
         var type = assign.getTypeOfAssign().getTypeOfElement();
 
         switch (type) {
-            case INT32, BOOLEAN -> code.append("istore_").append(reg).append(NL);
-            case ARRAYREF, OBJECTREF -> code.append("astore_").append(reg).append(NL);
+            case INT32, BOOLEAN -> code.append("istore ").append(reg).append(NL);
+            case ARRAYREF, OBJECTREF -> code.append("astore ").append(reg).append(NL);
         }
 
         return code.toString();
@@ -219,8 +224,8 @@ public class JasminGenerator {
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
         return switch (operand.getType().getTypeOfElement()) {
-            case INT32, BOOLEAN -> "iload_" + reg + NL;
-            case STRING, ARRAYREF, OBJECTREF -> "aload_" + reg + NL;
+            case INT32, BOOLEAN -> "iload " + reg + NL;
+            case STRING, ARRAYREF, OBJECTREF -> "aload " + reg + NL;
             default -> null;
         };
 
@@ -262,11 +267,11 @@ public class JasminGenerator {
                 break;
 
             case invokestatic:
-                //code.append(invokeStatic(callInst));
+                code.append(invokeStatic(callInst));
                 break;
 
             case invokevirtual:
-                //code.append(invokeVirtual(callInst));
+                code.append(invokeVirtual(callInst));
                 break;
 
             case arraylength:
@@ -275,12 +280,24 @@ public class JasminGenerator {
 
             case NEW:
 
+                var ret = new StringBuilder();
+
+                var classType = callInst.getOperands().get(0).getType();
+                var elemTypeLen = (classType.getTypeOfElement().toString()).length();
+                var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+
+                ret.append("new ").append(className).append(NL);
+
+                code.append(ret);
+
                 break;
 
         }
 
         return code.toString();
     }
+
+
 
     private String invokeSpecial(CallInstruction callInst) {
         var code = new StringBuilder();
@@ -293,14 +310,15 @@ public class JasminGenerator {
                 code.append("aload_0").append(NL);
                 break;
             case OBJECTREF, ARRAYREF:
-                code.append("aload_").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
+                code.append("aload ").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
                 break;
             case INT32, BOOLEAN:
-                code.append("iload_").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
+                code.append("iload ").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
                 break;
         }
 
         code.append("invokespecial ");
+
 
         if (operands.get(0).getType().getTypeOfElement() == ElementType.THIS) {
 
@@ -323,8 +341,9 @@ public class JasminGenerator {
         }
         else {
 
-            //TODO change this method to get the class name, since it is wrong
-            var className = ((Operand) operands.get(0));
+            var classType = operands.get(0).getType();
+            var elemTypeLen = (classType.getTypeOfElement().toString()).length();
+            var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
 
             code.append(className).append("/").append("<init>");
             code.append("(");
@@ -371,6 +390,49 @@ public class JasminGenerator {
         }
 
         code.append("invokevirtual ").append(method).append(NL);
+
+        return code.toString();
+    }
+
+    private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
+        var code = new StringBuilder();
+
+        var field = putFieldInst.getField().getName();
+        var object = putFieldInst.getObject();
+
+        var value = putFieldInst.getValue();
+
+        code.append("aload ").append(currentMethod.getVarTable().get(object.getName()).getVirtualReg()).append(NL);
+
+        code.append(generators.apply(value));
+
+        var classType = object.getType();
+        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
+        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+
+        code.append("putfield ").append(className).append("/").append(field).append(" ");
+
+        code.append(getType(putFieldInst.getValue().getType().getTypeOfElement())).append(NL);
+
+        return code.toString();
+    }
+
+    private String generateGetFieldInstruction(GetFieldInstruction getFieldInst) {
+        var code = new StringBuilder();
+
+        var field = getFieldInst.getField().getName();
+        var object = getFieldInst.getObject();
+
+        code.append("aload ").append(currentMethod.getVarTable().get(object.getName()).getVirtualReg()).append(NL);
+
+        var classType = object.getType();
+        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
+        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+
+        code.append("getfield ").append(className).append("/").append(field).append(" ");
+
+        code.append(getType(getFieldInst.getField().getType().getTypeOfElement())).append(NL);
+
 
         return code.toString();
     }
