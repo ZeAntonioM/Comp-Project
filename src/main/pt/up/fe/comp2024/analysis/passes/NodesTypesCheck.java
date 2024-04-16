@@ -227,7 +227,6 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
     private Void visitExprStmt(JmmNode exprStmt, SymbolTable table) {
         var expr = exprStmt.getChildren().get(0);
-        System.out.println(expr);
         visit(expr, table);
         exprStmt.put("type", expr.get("type"));
         return null;

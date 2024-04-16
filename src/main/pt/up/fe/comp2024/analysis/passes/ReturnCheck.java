@@ -38,7 +38,12 @@ public class ReturnCheck extends AnalysisVisitor {
 
         if (!returnType.equals(childType) && !returnType.equals("void")) {
 
-            var message = String.format("Method %s has a return type of %s, but the call is being assigned to a %s", currentMethod, returnType, childType);
+            if(childType.isEmpty()){
+                childType = "invalid";
+            }
+
+
+            var message = String.format("Method %s has a return type of %s, but the call is being assigned to a %s variable", currentMethod, returnType, childType);
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(returnChild),
