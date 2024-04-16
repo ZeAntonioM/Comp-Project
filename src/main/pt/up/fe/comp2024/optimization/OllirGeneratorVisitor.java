@@ -169,6 +169,10 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 code.delete(code.length()-2, code.length());
             }
         }
+        else {
+            code.append("args.array.String");
+            afterParam = 0;
+        }
 
         code.append(")");
 

@@ -39,6 +39,7 @@ public class JasminGenerator {
 
     public JasminGenerator(OllirResult ollirResult) {
         this.ollirResult = ollirResult;
+        System.out.println(ollirResult.getOllirCode());
 
         reports = new ArrayList<>();
         code = null;
@@ -408,9 +409,7 @@ public class JasminGenerator {
             code.append(generators.apply(operands.get(i)));
         }
 
-        var classType = operands.get(0).getType();
-        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
-        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+        var className = ollirResult.getSymbolTable().getClassName();
 
         var method = callInst.getMethodName();
         var literal = ((LiteralElement) method).getLiteral();

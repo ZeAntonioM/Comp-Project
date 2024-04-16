@@ -156,7 +156,7 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
             case "local", "param":
                 if (checkForTmp){
                     computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                            .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                            .append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                     code.append(tmp);
                 }
                 else {
