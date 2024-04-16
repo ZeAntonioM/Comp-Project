@@ -24,14 +24,20 @@ public class ParamChecks extends AnalysisVisitor {
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
 
+
+        String obj;
+
+        try {
+            obj = memberCallExpr.getChildren().get(0).get("name");
+        } catch (Exception e) {
+            obj = table.getClassName();
+        }
+
         var type = memberCallExpr.get("type");
         var method = memberCallExpr.get("name");
         var imports = table.getImports();
+        var isUnkown = imports.contains(obj);
         var superClass = table.getSuper();
-
-
-
-
 
         if (imports.contains(type) || superClass.equals(type) || type.equals("invalid")) {
             return null;
@@ -74,7 +80,7 @@ public class ParamChecks extends AnalysisVisitor {
             ));
         } else if (varargCount == 1) {
             compareArgParamTypes(memberCallExpr, params, args, method, varargCount);
-        } else if (args.size() != params.size()) {
+        } else if (args.size() != params.size() && !isUnkown) {
             var message = String.format("Method %s has %d parameters, but %d were given", method, params.size(), args.size());
             addReport(Report.newError(
                     Stage.SEMANTIC,

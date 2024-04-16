@@ -24,23 +24,21 @@ public class DiffChecks extends AnalysisVisitor {
     }
 
     private Void visitImport(JmmNode program, SymbolTable table) {
-        HashSet<String> uniqueImports = new HashSet<>();
-        List<String> imports = table.getImports();
-
-        for (String importName : imports) {
-            if (!uniqueImports.add(importName)) {
-                var message = String.format("Duplicate import %s", importName);
+        Set<String> set = new HashSet<>();
+        for (var imported_path: program.getChildren(Kind.IMPORT_DECL)) {
+            var className = imported_path.get("name");
+            if(set.contains(className)){
+                var message = String.format("Duplicated import %s", className);
                 addReport(Report.newError(
                         Stage.SEMANTIC,
-                        NodeUtils.getLine(program),
-                        NodeUtils.getColumn(program),
+                        NodeUtils.getLine(imported_path),
+                        NodeUtils.getColumn(imported_path),
                         message,
                         null
                 ));
             }
+            else set.add(className);
         }
-
-
 
         return null;
     }
@@ -109,7 +107,7 @@ public class DiffChecks extends AnalysisVisitor {
 
         List<JmmNode> varReferences = node.getDescendants(Kind.VAR_REF_EXPR);
         for (JmmNode varRef : varReferences) {
-            if (fields.contains(varRef.get("name"))) {
+            if (fields.contains(varRef.get("name")) && node.get("isStatic").equals("true")) {
                 var message = String.format("Variable %s is a field", varRef.get("name"));
                 addReport(Report.newError(
                         Stage.SEMANTIC,

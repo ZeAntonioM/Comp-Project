@@ -49,8 +49,6 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
 
         //System.out.println(value.getChildren());
 
-        System.out.println(assigneeType);
-        System.out.println(valueType);
 
         if (Objects.equals(assigneeType, valueType)
                 || imports.contains(valueType) && imports.contains(assigneeType)

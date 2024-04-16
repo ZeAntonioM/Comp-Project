@@ -157,14 +157,24 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
         var object = memberCallExpr.getChildren().get(0);
+        String obj;
+
+        try {
+            obj = object.get("name");
+        } catch (Exception e) {
+            obj = table.getClassName();
+        }
+
         var method = memberCallExpr.get("name");
         var methodType = table.getReturnType(method);
+        var imports = table.getImports();
+        var isUnkown = imports.contains(obj);
         visit(object, table);
 
-        if (methodType != null) {
+        if (methodType != null && !isUnkown) {
             memberCallExpr.put("type", methodType.getName());
         } else {
-            for (var i: table.getImports()){
+            for (var i: imports){
                 if (i.equals(object.get("type"))){
                     memberCallExpr.put("type",i);
                     return null;
