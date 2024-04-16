@@ -37,8 +37,51 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         addVisit(BOOL_EXPR, this::visitBoolExpr);
         addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(SELF_EXPR, this::visitSelfExpr);
+        addVisit(NEW_OBJ_EXPR, this::visitNewObjExpr);
 
         setDefaultVisit(this::defaultVisit);
+    }
+    public String getClosestOccurrenceVariable(String variableName, String methodSignature) {
+        for (Symbol s: table.getLocalVariables(methodSignature)){
+            if (s.getName().equals(variableName)){
+                return "local";
+            }
+        }
+        for (Symbol s: table.getParameters(methodSignature)){
+            if (s.getName().equals(variableName)){
+                return "param";
+            }
+        }
+
+        for (Symbol s: table.getFields()){
+            if (s.getName().equals(variableName)){
+                return "field";
+            }
+        }
+
+        for (String s: table.getImports()){
+            if (s.equals(variableName)){
+                return "import";
+            }
+        }
+
+        return "not found";
+    }
+
+    private OllirExprResult visitNewObjExpr(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        var tmp = OptUtils.getTemp();
+        var type = OptUtils.toOllirType(TypeUtils.getExprType(node, table));
+
+        computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type)
+                .append(SPACE).append("new").append("(").append(node.get("name")).append(")")
+                .append(type).append(END_STMT);
+
+        computation.append("invokespecial(").append(tmp).append(type).append(", \"<init>\").V").append(END_STMT);
+
+        return new OllirExprResult(tmp + type, computation.toString());
     }
 
     private OllirExprResult visitSelfExpr(JmmNode node, Void unused) {
@@ -86,28 +129,72 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
 
     private OllirExprResult visitMemberCallExpr(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
+        StringBuilder computation = new StringBuilder();
+
+        String type = OptUtils.toOllirType(new Type(node.get("type"),false));
+
+        var child = node.getJmmChild(0);
+        var lhs_code = visit(child).getCode();
 
         var parent = node.getParent();
-        String type = OptUtils.toOllirType(new Type("void", false));
-        if (ASSIGN_STMT.check(parent)) {
-            type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
+        boolean isAssignStmt = ASSIGN_STMT.check(parent);
+        var classMethodParent = node;
+
+        while (!METHOD_DECL.check(classMethodParent)){
+            classMethodParent = classMethodParent.getParent();
         }
 
-        var lhs = visit(node.getJmmChild(0));
-        var lhs_code = lhs.getCode();
+        String occurs = this.getClosestOccurrenceVariable(child.get("name"), classMethodParent.get("name"));
+        var tmp = OptUtils.getTemp() +  type;
 
-        //TODO: make this work when I have type annotation
-        code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
-
-
-        for (int i = 1; i < node.getNumChildren(); i++) {
-            code.append(", ");
-            code.append(visit(node.getJmmChild(i)).getCode());
+        switch (occurs){
+            case "local", "param":
+                if (isAssignStmt){
+                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE).append(lhs_code)
+                            .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                    code.append(tmp);
+                }
+                else {
+                    code.append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                }
+                break;
+            case "field":
+                computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                        .append("getfield(this, ").append(lhs_code).append(")").append(type).append(END_STMT);
+                if (isAssignStmt){
+                    var tmp2 = OptUtils.getTemp() + type;
+                    computation.append(tmp2).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                            .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                    code.append(tmp2);
+                }
+                else {
+                    code.append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                }
+                break;
+            case "import":
+                code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                type = OptUtils.toOllirType(new Type("void",true));
+                break;
         }
 
-        code.append(")").append(type).append(";");
+        if (isAssignStmt){
+            for (int i = 1; i < node.getNumChildren(); i++) {
+                computation.append(", ");
+                computation.append(visit(node.getJmmChild(i)).getCode());
+            }
 
-        return new OllirExprResult(code.toString());
+            computation.append(")").append(type).append(END_STMT);
+
+        }
+        else {
+            for (int i = 1; i < node.getNumChildren(); i++) {
+                code.append(", ");
+                code.append(visit(node.getJmmChild(i)).getCode());
+            }
+
+            code.append(")").append(type).append(";");
+        }
+        return new OllirExprResult(code.toString(), computation.toString());
     }
 
     private OllirExprResult visitInteger(JmmNode node, Void unused) {

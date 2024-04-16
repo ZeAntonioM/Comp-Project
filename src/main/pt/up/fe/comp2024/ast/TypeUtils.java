@@ -30,7 +30,7 @@ public class TypeUtils {
             case VAR_REF_EXPR -> getVarExprType(expr, table);
             case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
             case BOOL_EXPR, NEG_EXPR -> new Type(BOOLEAN_TYPE_NAME,false);
-            default -> throw new UnsupportedOperationException("Can't compute type for expression kind '" + kind + "'");
+            default -> new Type(expr.get("name"), false);
         };
 
         return type;

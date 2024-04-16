@@ -1,4 +1,7 @@
+import ola;
+
 class CompileAssignment {
+    ola lol;
 
     public static void main(String[] args) {
 
@@ -10,6 +13,12 @@ class CompileAssignment {
 
         b = 2;
         a = b;
+
+        lol = new ola();
+        ola.bar();
+        ola.cookie(a,b);
+        b = lol.bar();
+        lol.cookie(a,b);
 
         return 0;
     }
