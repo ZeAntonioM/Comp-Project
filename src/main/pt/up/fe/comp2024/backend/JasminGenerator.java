@@ -164,11 +164,11 @@ public class JasminGenerator {
 
         //check return instruction
         if (method.getInstructions().isEmpty() ||
-            (
-                !(method.getInstructions().get(method.getInstructions().size() - 1) instanceof ReturnInstruction)
-                &&
-                (method.getReturnType().getTypeOfElement() == ElementType.VOID))
-            )
+                (
+                        !(method.getInstructions().get(method.getInstructions().size() - 1) instanceof ReturnInstruction)
+                                &&
+                                (method.getReturnType().getTypeOfElement() == ElementType.VOID))
+        )
         {
             code.append(TAB).append("return").append(NL);
         }
@@ -282,9 +282,7 @@ public class JasminGenerator {
 
                 var ret = new StringBuilder();
 
-                var classType = callInst.getOperands().get(0).getType();
-                var elemTypeLen = (classType.getTypeOfElement().toString()).length();
-                var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+                var className = ((Operand) callInst.getCaller()).getName();
 
                 ret.append("new ").append(className).append(NL);
 
@@ -365,15 +363,29 @@ public class JasminGenerator {
     private String invokeStatic(CallInstruction callInst) {
         var code = new StringBuilder();
 
-        var method = callInst.getMethodName();
         var args = callInst.getArguments();
+        var operands = callInst.getOperands();
 
         // load arguments
         for (var arg : args) {
-            code.append(arg);
+            code.append(generators.apply(arg));
         }
 
-        code.append("invokestatic ").append(method).append(NL);
+        var className = ((Operand) callInst.getCaller()).getName();
+
+        var method = callInst.getMethodName();
+        var literal = ((LiteralElement) method).getLiteral();
+        if (literal.startsWith("\"") && literal.endsWith("\"") && literal.length() > 1) {
+            literal = literal.substring(1, literal.length() - 1);
+        }
+
+        code.append("invokestatic ").append(className).append("/").append(literal).append("(");
+
+        for (int i = 2; i < operands.size(); i++) {
+            code.append(getType(operands.get(i).getType().getTypeOfElement()));
+        }
+
+        code.append(")").append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
 
         return code.toString();
     }
@@ -381,15 +393,38 @@ public class JasminGenerator {
     private String invokeVirtual(CallInstruction callInst) {
         var code = new StringBuilder();
 
-        var method = callInst.getMethodName();
-        var args = callInst.getArguments();
+        var operands = callInst.getOperands();
 
-        // load arguments
-        for (var arg : args) {
-            code.append(arg);
+        // load object
+        if (operands.get(0).getType().getTypeOfElement() == ElementType.THIS) {
+            code.append("aload_0").append(NL);
+        }
+        else {
+            code.append("aload ").append(currentMethod.getVarTable().get(((Operand) operands.get(0)).getName()).getVirtualReg()).append(NL);
         }
 
-        code.append("invokevirtual ").append(method).append(NL);
+        // load arguments
+        for (int i = 2; i < operands.size(); i++) {
+            code.append(generators.apply(operands.get(i)));
+        }
+
+        var classType = operands.get(0).getType();
+        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
+        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+
+        var method = callInst.getMethodName();
+        var literal = ((LiteralElement) method).getLiteral();
+        if (literal.startsWith("\"") && literal.endsWith("\"") && literal.length() > 1) {
+            literal = literal.substring(1, literal.length() - 1);
+        }
+
+        code.append("invokevirtual ").append(className).append("/").append(literal).append("(");
+
+        for (int i = 2; i < callInst.getOperands().size(); i++) {
+            code.append(getType(callInst.getOperands().get(i).getType().getTypeOfElement()));
+        }
+
+        code.append(")").append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
 
         return code.toString();
     }
@@ -406,9 +441,7 @@ public class JasminGenerator {
 
         code.append(generators.apply(value));
 
-        var classType = object.getType();
-        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
-        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+        var className = currentMethod.getOllirClass().getClassName();
 
         code.append("putfield ").append(className).append("/").append(field).append(" ");
 
@@ -425,9 +458,7 @@ public class JasminGenerator {
 
         code.append("aload ").append(currentMethod.getVarTable().get(object.getName()).getVirtualReg()).append(NL);
 
-        var classType = object.getType();
-        var elemTypeLen = (classType.getTypeOfElement().toString()).length();
-        var className = classType.toString().substring(elemTypeLen+1, classType.toString().length() - 1);
+        var className = currentMethod.getOllirClass().getClassName();
 
         code.append("getfield ").append(className).append("/").append(field).append(" ");
 
