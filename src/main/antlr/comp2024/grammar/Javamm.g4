@@ -110,10 +110,10 @@ stmt
 expr
     : LPAREN expr RPAREN #PrecedentExpr  //removi o n para funcionar
     | '!' expr #NegExpr
+    | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
     | expr op=( MUL | DIV ) expr #BinaryExpr 
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
-    | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp2
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp2

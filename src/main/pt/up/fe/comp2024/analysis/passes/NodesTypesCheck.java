@@ -32,6 +32,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         addVisit(Kind.RETURN_STMT, this::visitReturnStmt);
         addVisit(Kind.SELF_EXPR, this::visitSelfExpr);
         addVisit(Kind.ARRAY_INIT_EXPR, this::visitArrayInitExpr);
+        addVisit(Kind.EXPR_STMT, this::visitExprStmt);
     }
 
     private Void visitMethodCall(JmmNode methodCall, SymbolTable table) {
@@ -76,8 +77,8 @@ public class NodesTypesCheck extends AnalysisVisitor {
         var arrayVarType = arrayVar.get("type");
         var indexType = index.get("type");
 
-        if (Objects.equals(arrayVarType, "int[]") && Objects.equals(indexType, "int")) {
-            arrayRefExpr.put("type", "int[]");
+        if ((Objects.equals(arrayVarType, "int[]") || Objects.equals(arrayVarType, "vararg")) && Objects.equals(indexType, "int")) {
+            arrayRefExpr.put("type", "int");
         } else {
             arrayRefExpr.put("type", "invalid");
         }
@@ -223,6 +224,15 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
         return null;
     }
+
+    private Void visitExprStmt(JmmNode exprStmt, SymbolTable table) {
+        var expr = exprStmt.getChildren().get(0);
+        System.out.println(expr);
+        visit(expr, table);
+        exprStmt.put("type", expr.get("type"));
+        return null;
+    }
+
 
 
 }

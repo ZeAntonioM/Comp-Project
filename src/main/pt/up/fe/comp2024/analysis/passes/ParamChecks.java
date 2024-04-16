@@ -26,6 +26,7 @@ public class ParamChecks extends AnalysisVisitor {
 
     private Void visitMethodCall(JmmNode methodDecl, SymbolTable table) {
         currentMethod = methodDecl.get("name");
+
         return null;
     }
 
@@ -36,6 +37,9 @@ public class ParamChecks extends AnalysisVisitor {
         var imports = table.getImports();
         var superClass = table.getSuper();
         var returnType = table.getReturnType(currentMethod).getName();
+
+
+
 
 
         if (imports.contains(type) || superClass.equals(type) || type.equals("invalid")) {
@@ -88,7 +92,8 @@ public class ParamChecks extends AnalysisVisitor {
                     message,
                     null
             ));
-        }  else if (!returnType.equals(type)){
+        }  else if (!returnType.equals(type) && !returnType.equals("void")){
+
             var message = String.format("Method %s has a return type of %s, but the call is being assigned to a %s", method, returnType, type);
             addReport(Report.newError(
                     Stage.SEMANTIC,
