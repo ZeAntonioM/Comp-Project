@@ -29,10 +29,11 @@ public class Utils {
             }
         }
 
-        if (!table.getImports().contains(operandName)) {
+        if (table.getImports().contains(operandName)) {
             return operandName;
         }
 
-        return null;
+        return "";
+
     }
 }

@@ -69,7 +69,7 @@ public class ParamChecks extends AnalysisVisitor {
                     null
             ));
         } else if (varargCount == 1 && !varargIsLast) {
-            var message = String.format("Method %s has a VarArg param that isn't the last element.", method);
+            var message = String.format("Method %s has a VarArg param that isn't the last element", method);
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     NodeUtils.getLine(memberCallExpr),
