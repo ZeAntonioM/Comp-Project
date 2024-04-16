@@ -28,6 +28,12 @@ public class ThisOperationsCheck extends AnalysisVisitor {
 
     private Void visitSelfExpr(JmmNode selfExpr, SymbolTable table) {
 
+        try{
+            selfExpr.get("name");
+        }catch(Exception e){
+            selfExpr.put("name", "this");
+        }
+
         if(Objects.equals(currentMethodsStatic, "true")){
             addReport(Report.newError(
                     Stage.SEMANTIC,

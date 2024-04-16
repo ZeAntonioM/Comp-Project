@@ -111,14 +111,14 @@ expr
     : LPAREN expr RPAREN #PrecedentExpr  //removi o n para funcionar
     | '!' expr #NegExpr
     | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
-    | expr op=( MUL | DIV ) expr #BinaryExpr 
+    | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
+    | expr op=( MUL | DIV ) expr #BinaryExpr
     | expr op=( ADD | SUB ) expr #BinaryExpr 
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp2
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp2
     | expr '.' 'length' #LengthExpr                                            //not for cp2
-    | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | 'new' (name=ID | name='main' | name='length') LPAREN RPAREN #NewObjExpr
     //| (name=ID | name='main' | name='length') LBRAC expr RBRAC #ArrayRefExpr   //not for cp2
     | value=INTEGER #IntegerLiteral
