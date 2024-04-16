@@ -10,13 +10,12 @@ import pt.up.fe.comp2024.ast.NodeUtils;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 
-public class DuplicatesChecks extends AnalysisVisitor {
+public class DiffChecks extends AnalysisVisitor {
 
-
+    private final Set<String> fields = new HashSet<>();
     @Override
     protected void buildVisitor() {
         addVisit(Kind.CLASS_DECL_RULE, this::visitClassFields);
@@ -49,6 +48,7 @@ public class DuplicatesChecks extends AnalysisVisitor {
     private Void visitClassFields(JmmNode node, SymbolTable table) {
         Set<String> set = new HashSet<>();
         for (var field : node.getChildren(Kind.VAR_DECL)) {
+            fields.add(field.get("name"));
             if (set.contains(field.get("name"))) {
                 var message = String.format("Duplicated field %s", field.get("name"));
                 addReport(Report.newError(
@@ -75,6 +75,7 @@ public class DuplicatesChecks extends AnalysisVisitor {
         }
         return null;
     }
+
 
     private Void visitMethods(JmmNode node, SymbolTable table){
         Set<String> set = new HashSet<>();
@@ -105,6 +106,21 @@ public class DuplicatesChecks extends AnalysisVisitor {
             }
             else set.add(varRef.get("name"));
         }
+
+        List<JmmNode> varReferences = node.getDescendants(Kind.VAR_REF_EXPR);
+        for (JmmNode varRef : varReferences) {
+            if (fields.contains(varRef.get("name"))) {
+                var message = String.format("Variable %s is a field", varRef.get("name"));
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(varRef),
+                        NodeUtils.getColumn(varRef),
+                        message,
+                        null
+                ));
+            }
+        }
+
         return null;
     }
 

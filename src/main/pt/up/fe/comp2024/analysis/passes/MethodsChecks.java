@@ -8,16 +8,24 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.sql.SQLOutput;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
 public class MethodsChecks extends AnalysisVisitor {
 
+    private final Map<String, JmmNode> fields = new HashMap<>();
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.MEMBER_CALL_EXPR, this::visitMemberCallExpr);
     }
+
+
+
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
 

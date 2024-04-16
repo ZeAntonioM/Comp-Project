@@ -23,8 +23,8 @@ public class OperationTypesCheck extends AnalysisVisitor {
         var rightOperand = binaryExpr.getChildren().get(1);
 
         var leftType = leftOperand.get("type");
-        var rightType = rightOperand.get("type");
 
+        var rightType = rightOperand.get("type");
 
         var operator = binaryExpr.get("op");
 
@@ -33,6 +33,14 @@ public class OperationTypesCheck extends AnalysisVisitor {
             case "&&" -> "boolean";
             default -> throw new IllegalArgumentException("Unknown operator: " + operator);
         };
+
+        if (leftOperand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())) {
+            leftType = expectedType;
+        }
+
+        if (rightOperand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())) {
+            rightType = expectedType;
+        }
 
         if (!Objects.equals(leftType, expectedType) || !Objects.equals(rightType, expectedType)) {
             var message = String.format("Operator '%s' expects operands of type '%s', but got '%s' and '%s'", operator, expectedType, leftType, rightType);
@@ -43,6 +51,10 @@ public class OperationTypesCheck extends AnalysisVisitor {
                     message,
                     null
             ));
+        }
+
+        if (binaryExpr.get("type").equals("invalid")){
+            binaryExpr.put("type", expectedType);
         }
 
         return null;
