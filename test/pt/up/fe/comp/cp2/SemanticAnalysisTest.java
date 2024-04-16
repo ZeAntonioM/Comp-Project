@@ -35,7 +35,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/IntPlusObject.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test intPlusObject" + result.getReports());
-
     }
 
 
@@ -44,7 +43,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/BoolTimesInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test boolTimesInt" + result.getReports());
-
     }
 
     @Test
@@ -52,8 +50,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayPlusInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayPlusInt" + result.getReports());
-
-
     }
 
     @Test
@@ -61,16 +57,13 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayAccessOnInt" + result.getReports());
-
     }
-
 
     @Test
     public void arrayIndexNotInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayIndexNotInt.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayIndexNotInt" + result.getReports());
-
     }
 
     @Test
@@ -118,7 +111,6 @@ import pt.up.fe.specs.util.SpecsIo;
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayInWhileCondition.jmm"));
         TestUtils.mustFail(result);
         //System.out.println("Test arrayInWhileCondition" + result.getReports());
-
     }
 
     @Test
@@ -180,7 +172,6 @@ import pt.up.fe.specs.util.SpecsIo;
                 .analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/Varargs.jmm"));
         TestUtils.noErrors(result);
         //System.out.println("Test varargs" + result.getReports());
-
     }
 
     @Test
