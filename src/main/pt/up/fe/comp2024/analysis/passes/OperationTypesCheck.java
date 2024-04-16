@@ -24,6 +24,8 @@ public class OperationTypesCheck extends AnalysisVisitor {
 
         var leftType = leftOperand.get("type");
         var rightType = rightOperand.get("type");
+
+
         var operator = binaryExpr.get("op");
 
         var expectedType = switch (operator) {

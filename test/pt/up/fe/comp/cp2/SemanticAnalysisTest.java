@@ -56,6 +56,7 @@ import pt.up.fe.specs.util.SpecsIo;
     public void arrayAccessOnInt() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/cp2/semanticanalysis/ArrayAccessOnInt.jmm"));
         TestUtils.mustFail(result);
+        //TestUtils.noErrors(result);
         System.out.println("Test arrayAccessOnInt" + result.getReports());
     }
 
