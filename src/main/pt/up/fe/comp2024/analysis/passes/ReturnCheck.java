@@ -34,11 +34,6 @@ public class ReturnCheck extends AnalysisVisitor {
         var returnChild = methodDecl.getJmmChild(methodDecl.getChildren().size() - 1);
         var childType = returnChild.get("type");
 
-
-        if (returnChild.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())) {
-            childType = returnType;
-        }
-
         if (!returnType.equals(childType) && !returnType.equals("void")) {
 
             if(childType.isEmpty()){

@@ -34,14 +34,6 @@ public class OperationTypesCheck extends AnalysisVisitor {
             default -> throw new IllegalArgumentException("Unknown operator: " + operator);
         };
 
-        if (leftOperand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())) {
-            leftType = expectedType;
-        }
-
-        if (rightOperand.getKind().equals(Kind.MEMBER_CALL_EXPR.toString())) {
-            rightType = expectedType;
-        }
-
         if (!Objects.equals(leftType, expectedType) || !Objects.equals(rightType, expectedType)) {
             var message = String.format("Operator '%s' expects operands of type '%s', but got '%s' and '%s'", operator, expectedType, leftType, rightType);
             addReport(Report.newError(
