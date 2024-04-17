@@ -79,7 +79,7 @@ public class JasminGenerator {
         var code = new StringBuilder();
 
         // generate class name
-        var className = ollirResult.getOllirClass().getClassName();
+        var className = importCorrection(ollirResult.getOllirClass().getClassName());
         code.append(".class ").append(className).append(NL);
 
         if (ollirResult.getOllirClass().getSuperClass() == null) {
@@ -109,7 +109,7 @@ public class JasminGenerator {
         var modifier = getFieldModifier(field);
 
         var fieldName = field.getFieldName();
-        var fieldType = this.getType(field.getFieldType().getTypeOfElement());
+        var fieldType = this.getType(field.getFieldType());
 
         code.append(".field ").append(modifier).append(fieldName).append(" ").append(fieldType).append(NL);
 
@@ -126,7 +126,7 @@ public class JasminGenerator {
         // calculate modifier
         var modifier = method.getMethodAccessModifier() != AccessModifier.DEFAULT ?
                 method.getMethodAccessModifier().name().toLowerCase() + " " :
-                "";
+                "public ";
 
         modifier += method.isFinalMethod() ? "final " : "";
         modifier += method.isStaticMethod() ? "static " : "";
@@ -139,10 +139,10 @@ public class JasminGenerator {
         code.append("(");
 
         for (var param: method.getParams()) {
-            code.append(getType(param.getType().getTypeOfElement()));
+            code.append(getType(param.getType()));
         }
 
-        var returnType = this.getType(method.getReturnType().getTypeOfElement());
+        var returnType = this.getType(method.getReturnType());
 
         code.append(")").append(returnType).append(NL);
 
@@ -156,8 +156,8 @@ public class JasminGenerator {
 
             code.append(instCode);
 
-            if ((inst.getInstType() == InstructionType.CALL) && ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
-                code.append(TAB).append("pop").append(NL);
+            if ((inst.getInstType() == InstructionType.CALL) &&  ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
+                code.append("pop").append(NL);
             }
 
         }
@@ -319,12 +319,12 @@ public class JasminGenerator {
         code.append("/<init>(");
 
         for (var arg: args) {
-            code.append(getType(arg.getType().getTypeOfElement()));
+            code.append(getType(arg.getType()));
         }
 
         code.append(")");
 
-        code.append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
+        code.append(getType(callInst.getReturnType())).append(NL);
 
         return code.toString();
     }
@@ -347,10 +347,10 @@ public class JasminGenerator {
         code.append("invokestatic ").append(className).append("/").append(literal).append("(");
 
         for (var arg: args) {
-            code.append(getType(arg.getType().getTypeOfElement()));
+            code.append(getType(arg.getType()));
         }
 
-        code.append(")").append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
+        code.append(")").append(getType(callInst.getReturnType())).append(NL);
 
         return code.toString();
     }
@@ -367,7 +367,7 @@ public class JasminGenerator {
             code.append(generators.apply(arg));
         }
 
-        var className = ollirResult.getSymbolTable().getClassName();
+        var className = getImportedClass(((ClassType) callInst.getCaller().getType()).getName());
 
         var method = callInst.getMethodName();
         var literal = ((LiteralElement) method).getLiteral().replace("\"", "");
@@ -376,10 +376,10 @@ public class JasminGenerator {
         code.append("invokevirtual ").append(className).append("/").append(literal).append("(");
 
         for (var arg: callInst.getArguments()) {
-            code.append(getType(arg.getType().getTypeOfElement()));
+            code.append(getType(arg.getType()));
         }
 
-        code.append(")").append(getType(callInst.getReturnType().getTypeOfElement())).append(NL);
+        code.append(")").append(getType(callInst.getReturnType())).append(NL);
 
         return code.toString();
     }
@@ -415,7 +415,7 @@ public class JasminGenerator {
 
         code.append("putfield ").append(className).append("/").append(field).append(" ");
 
-        code.append(getType(putFieldInst.getValue().getType().getTypeOfElement())).append(NL);
+        code.append(getType(putFieldInst.getValue().getType())).append(NL);
 
         return code.toString();
     }
@@ -432,7 +432,7 @@ public class JasminGenerator {
 
         code.append("getfield ").append(className).append("/").append(field).append(" ");
 
-        code.append(getType(getFieldInst.getField().getType().getTypeOfElement())).append(NL);
+        code.append(getType(getFieldInst.getField().getType())).append(NL);
 
         return code.toString();
     }
@@ -462,18 +462,21 @@ public class JasminGenerator {
 
         for (String imported : ollirResult.getOllirClass().getImports()) {
             if (imported.endsWith(className)) {
-                return imported;
+                return importCorrection(imported);
             }
         }
 
         return className;
+    }
 
+    private String importCorrection(String className) {
+        return className.replace(".", "/");
     }
 
     private String getFieldModifier(Field field) {
         var modifier = field.getFieldAccessModifier() != AccessModifier.DEFAULT ?
                 field.getFieldAccessModifier().name().toLowerCase() + " " :
-                "";
+                "public ";
         if (field.isFinalField()) {
             modifier += "final ";
         }
@@ -483,16 +486,21 @@ public class JasminGenerator {
         return modifier;
     }
 
-    private String getType(ElementType type) {
-        return switch (type) {
-            case INT32 -> "I";
-            case BOOLEAN -> "Z";
-            case VOID -> "V";
-            case STRING -> "Ljava/lang/String;";
-            case ARRAYREF -> "[Ljava/lang/String;";
-            case OBJECTREF -> "L";
-            default -> null;
-        };
+    private String getType(Type type) {
+
+        var code = "";
+
+        switch (type.getTypeOfElement()) {
+            case INT32 -> code = "I";
+            case BOOLEAN -> code = "Z";
+            case VOID -> code = "V";
+            case STRING -> code = "Ljava/lang/String;";
+            case ARRAYREF -> code = "[Ljava/lang/String;";
+            case OBJECTREF -> code = "L"+getImportedClass(((ClassType) type).getName())+";";
+            default -> code = null;
+        }
+
+        return code;
     }
 
     private String getLoadInstruction(Operand operand) {
@@ -514,5 +522,6 @@ public class JasminGenerator {
         return code.toString();
 
     }
+
 
 }
