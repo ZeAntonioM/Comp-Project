@@ -45,7 +45,7 @@ program
     ;
 
 importDecl locals [boolean isSubImport = false]
-    : 'import' name+=ID ( '.' name+=ID {$isSubImport = true;})* SEMI #ImportDeclRule
+    : 'import' (name+=ID | 'main') ( '.' (name+=ID | 'main') {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]

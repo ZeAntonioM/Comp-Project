@@ -1,3 +1,5 @@
+import main;
+
 class VarNotDeclared {
 
     public static void main(String[] args) {
@@ -5,6 +7,11 @@ class VarNotDeclared {
     }
 
     public int foo() {
-        return x;
+        int main;
+        int length;
+        main = 5;
+        length = 10;
+        main = main + length;
+        return main;
     }
 }
