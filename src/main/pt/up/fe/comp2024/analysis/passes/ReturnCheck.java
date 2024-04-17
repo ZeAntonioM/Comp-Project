@@ -37,7 +37,7 @@ public class ReturnCheck extends AnalysisVisitor {
         var superClass = table.getSuper();
 
 
-        if (!returnType.equals(childType) && !returnType.equals("void") && !childType.equals(superClass)) {
+        if (!returnType.equals(childType) && !returnType.equals("void") && !(childType.equals(superClass) || table.getImports().contains(childType))) {
 
             if(childType.isEmpty()){
                 childType = "invalid";
