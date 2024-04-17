@@ -62,7 +62,7 @@ public class ReturnCheck extends AnalysisVisitor {
         var returnType = table.getReturnType(currentMethod).getName();
         var returnStmtType = returnStmt.get("type");
 
-        if (!returnType.equals(returnStmtType) || returnType.equals("void")) {
+        if (!returnType.equals(returnStmtType)) {
             var message = String.format("Method %s has a return type of %s, but the call is being assigned to a %s", currentMethod, returnType, returnStmtType);
             addReport(Report.newError(
                     Stage.SEMANTIC,

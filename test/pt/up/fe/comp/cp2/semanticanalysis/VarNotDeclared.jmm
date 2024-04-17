@@ -1,22 +1,10 @@
-class Varargs {
+class VarNotDeclared {
+
+    public static void main(String[] args) {
+
+    }
+
     public int foo() {
-        int a;
-        a = this.varargs(10, 20, 30, 40 ,50);
-        return a;
+
+        return x;
     }
-
-    public int varargs(int a, int b, int... d) {
-        int sum;
-
-        if (d.length > 0) {
-            return a + b;
-        } else {
-            sum = a + b;
-            return sum;
-        }
-
-        return 0;
-    }
-
-
-}
