@@ -99,7 +99,6 @@ public class ParamChecks extends AnalysisVisitor {
 
     private void compareArgParamTypes(JmmNode memberCallExpr, List<Symbol> params, List<JmmNode> args, String method, int varargCount) {
 
-
         for (int i = 0; i < params.size()-varargCount; i++) {
             var paramType = params.get(i).getType().getName();
 
@@ -116,6 +115,40 @@ public class ParamChecks extends AnalysisVisitor {
                         message,
                         null
                 ));
+            }
+        }
+
+        String varargType = null;
+        boolean isArray = false;
+        for (int i = params.size()-varargCount; i < args.size(); i++) {
+            var argType = args.get(i).get("type");
+            System.out.println(argType);
+            System.out.println(varargType);
+            System.out.println(isArray);
+            if (varargType == null) {
+                varargType = argType;
+                isArray = argType.equals("int[]");
+            } else if (!varargType.equals(argType)) {
+                var message = String.format("Vararg arguments in method %S are not all of the same type", method);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(memberCallExpr),
+                        NodeUtils.getColumn(memberCallExpr),
+                        message,
+                        null
+                ));
+                break;
+            } else if (isArray) {
+                var message = String.format("Vararg arguments on %s cant have more than one int[]", method);
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(memberCallExpr),
+                        NodeUtils.getColumn(memberCallExpr),
+                        message,
+                        null
+                ));
+                break;
+
             }
         }
     }

@@ -34,8 +34,13 @@ public class ReturnCheck extends AnalysisVisitor {
         }
         var returnChild = methodDecl.getJmmChild(methodDecl.getChildren().size() - 1);
         var childType = returnChild.get("type");
+        var superClass = table.getSuper();
 
-        if (!returnType.equals(childType) && !returnType.equals("void")) {
+        System.out.println(returnType);
+        System.out.println(returnChild);
+
+
+        if (!returnType.equals(childType) && !returnType.equals("void") && !childType.equals(superClass)) {
 
             if(childType.isEmpty()){
                 childType = "invalid";
