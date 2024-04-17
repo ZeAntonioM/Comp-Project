@@ -277,19 +277,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
-    /**
-     * Default visitor. Visits every child node and return an empty string.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+
     private String defaultVisit(JmmNode node, Void unused) {
 
+        StringBuilder code = new StringBuilder();
         for (var child : node.getChildren()) {
-            visit(child);
+            code.append(visit(child));
         }
 
-        return "";
+        return code.toString();
     }
 }
