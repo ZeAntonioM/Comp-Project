@@ -49,6 +49,18 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
 
         //System.out.println(value.getChildren());
 
+        if (!(assignee.getKind().equals(Kind.VAR_REF_EXPR.toString()) || assignee.getKind().equals(Kind.ARRAY_REF_EXPR.toString()))) {
+            var message = "Cannot assign to a non variable";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(assignStmt),
+                    NodeUtils.getColumn(assignStmt),
+                    message,
+                    null
+            ));
+
+            return null;
+        }
 
         if (Objects.equals(assigneeType, valueType)
                 || imports.contains(valueType) && imports.contains(assigneeType)

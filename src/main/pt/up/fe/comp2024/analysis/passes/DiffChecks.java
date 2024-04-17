@@ -26,7 +26,9 @@ public class DiffChecks extends AnalysisVisitor {
     private Void visitImport(JmmNode program, SymbolTable table) {
         Set<String> set = new HashSet<>();
         for (var imported_path: program.getChildren(Kind.IMPORT_DECL)) {
-            var className = imported_path.get("name");
+            String pathString = imported_path.get("name");
+            String[] pathParts = pathString.substring(1, pathString.length() - 1).split(", ");
+            String className = pathParts[pathParts.length - 1];
             if(set.contains(className)){
                 var message = String.format("Duplicated import %s", className);
                 addReport(Report.newError(
