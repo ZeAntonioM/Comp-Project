@@ -45,12 +45,12 @@ program
     ;
 
 importDecl locals [boolean isSubImport = false]
-    : 'import' (name+=ID | 'main') ( '.' (name+=ID | 'main') {$isSubImport = true;})* SEMI #ImportDeclRule
+    : 'import' (name+=(ID | 'main' | 'length' | 'String')) ( '.' (name+=(ID | 'main' | 'length' | 'String')) {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]
-    : CLASS name=ID
-        ('extends' superclass=(ID | 'main') {$hasSuperClass = true;})?
+    : CLASS name=(ID | 'main' | 'length' | 'String')
+        ('extends' superclass=(ID | 'main' | 'length' | 'String') {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
         RCURLY #ClassDeclRule
@@ -65,7 +65,7 @@ type locals [boolean isArray=false, boolean isVararg=false]
     | name=INT '...' {$isVararg=true;}#VarargType
     | name=INT #IntType
     | name=BOOL #BoolType
-    | name=ID #ObjectType
+    | name=(ID | 'main' | 'length' | 'String') #ObjectType
     | name='String' {$isArray=true;} #StringType
     ;
 
@@ -73,7 +73,7 @@ type locals [boolean isArray=false, boolean isVararg=false]
 methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     : (PUBLIC {$isPublic=true;})?
         (STATIC {$isStatic=true;})?
-        type name=(ID|'main')
+        type name=(ID | 'main' | 'length' | 'String')
         LPAREN
             ( paramDecl ( ',' paramDecl )* )?
         RPAREN
@@ -95,7 +95,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     ;
 
 paramDecl
-    : type name=(ID|'main') #ParamRule
+    : type name=(ID | 'main' | 'length' | 'String') #ParamRule
     ;
 
 stmt
@@ -110,7 +110,7 @@ stmt
 expr
     : LPAREN expr RPAREN #PrecedentExpr  //removi o n para funcionar
     | '!' expr #NegExpr
-    | expr '.' name=ID LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | expr '.' name=(ID | 'main' | 'length' | 'String') LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
     | expr op=( MUL | DIV ) expr #BinaryExpr

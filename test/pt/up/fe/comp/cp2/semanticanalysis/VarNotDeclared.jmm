@@ -1,10 +1,8 @@
-class VarNotDeclared {
-
-    public static void main(String[] args) {
-
-    }
-
+import main;
+class Varargs extends main{
     public int foo() {
-        return x;
+        boolean a;
+        a = this.main();
+        return 0;
     }
 }
