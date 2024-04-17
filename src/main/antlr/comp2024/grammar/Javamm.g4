@@ -45,12 +45,12 @@ program
     ;
 
 importDecl locals [boolean isSubImport = false]
-    : 'import' (name+=ID | 'main') ( '.' (name+=ID | 'main') {$isSubImport = true;})* SEMI #ImportDeclRule
+    : 'import' name+=ID ( '.' name+=ID {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]
-    : CLASS name=(ID|'main')
-        ('extends' superclass=(ID | 'main') {$hasSuperClass = true;})?
+    : CLASS name=ID
+        ('extends' superclass=ID {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
         RCURLY #ClassDeclRule
