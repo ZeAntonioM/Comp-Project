@@ -256,7 +256,11 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         Type type = TypeUtils.getExprType(node, table);
         String ollirType = OptUtils.toOllirType(type);
 
-        String code = ollirType.equals(".") ? id :  id + ollirType;
+        if (ASSIGN_STMT.check(node.getParent())){
+            ollirType = OptUtils.toOllirType(TypeUtils.getExprType(node.getParent().getJmmChild(0), table));
+        }
+
+        String code = ollirType.equals(".") ? id : id + ollirType;
 
         return new OllirExprResult(code);
     }

@@ -1,24 +1,19 @@
-import ola;
+import A;
+import B;
 
 class CompileAssignment {
-    ola lol;
 
     public static void main(String[] args) {
 
     }
 
     public int foo() {
-        int a;
-        int b;
+        A a;
+        B b;
 
-        b = 2;
+        a = new A();
+        b = a;
         a = b;
-
-        lol = new ola();
-        ola.bar();
-        ola.cookie(a,b);
-        b = lol.bar();
-        lol.cookie(a,b);
 
         return 0;
     }
