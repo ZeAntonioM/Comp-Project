@@ -1,10 +1,11 @@
-class VarNotDeclared {
+import main;
+
+class main extends main{
 
     public static void main(String[] args) {
-
     }
 
-    public int foo() {
-        return x;
+    public int main(){
+        return 0;
     }
 }

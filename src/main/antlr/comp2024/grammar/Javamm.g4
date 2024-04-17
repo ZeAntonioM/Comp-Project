@@ -73,7 +73,7 @@ type locals [boolean isArray=false, boolean isVararg=false]
 methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     : (PUBLIC {$isPublic=true;})?
         (STATIC {$isStatic=true;})?
-        type name=ID
+        type name=(ID|'main')
         LPAREN
             ( paramDecl ( ',' paramDecl )* )?
         RPAREN
