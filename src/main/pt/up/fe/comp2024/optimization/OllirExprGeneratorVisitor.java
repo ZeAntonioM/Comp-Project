@@ -198,7 +198,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 else {
                     code.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
                 }
-                type = OptUtils.toOllirType(table.getReturnType(node.get("name")));
+                var retType = table.getReturnType(node.get("name"));
+                type = retType != null ? OptUtils.toOllirType(retType) : OptUtils.toOllirType(new Type("void",true));
                 break;
 
         }
