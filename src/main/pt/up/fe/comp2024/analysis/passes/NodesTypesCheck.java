@@ -265,7 +265,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         var array = lengthExpr.getChildren().get(0);
         visit(array, table);
         var arrayType = array.get("type");
-        if (Objects.equals(arrayType, "int[]")) {
+        if (Objects.equals(arrayType, "int[]") || Objects.equals(arrayType, "vararg")) {
             lengthExpr.put("type", "int");
         } else {
             lengthExpr.put("type", "invalid");
