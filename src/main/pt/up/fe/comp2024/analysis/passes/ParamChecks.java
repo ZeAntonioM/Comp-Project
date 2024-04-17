@@ -15,12 +15,20 @@ import java.util.List;
 
 public class ParamChecks extends AnalysisVisitor {
 
-
+    private String currentMethod;
     @Override
     public void buildVisitor() {
         addVisit(Kind.MEMBER_CALL_EXPR, this::visitMemberCallExpr);
         addVisit(Kind.VAR_DECL, this::visitVarDecl);
+        addVisit(Kind.METHOD_DECL, this::visitMethodCall);
     }
+
+    private Void visitMethodCall(JmmNode methodDecl, SymbolTable table) {
+        currentMethod = methodDecl.get("name");
+        return null;
+    }
+
+
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
 
@@ -156,6 +164,18 @@ public class ParamChecks extends AnalysisVisitor {
 
     private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
         var var = varDecl.getChildren().get(0).get("isVararg");
+        var varRefName = varDecl.get("name");
+        if (table.getParameters(currentMethod).stream()
+                .anyMatch(param -> param.getName().equals(varRefName))) {
+            var message = "Variable name is the same as a parameter name";
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(varDecl),
+                    NodeUtils.getColumn(varDecl),
+                    message,
+                    null
+            ));
+        }
         if (var.equals("true")){
             var message = "Vararg detected in variable declaration";
             addReport(Report.newError(
