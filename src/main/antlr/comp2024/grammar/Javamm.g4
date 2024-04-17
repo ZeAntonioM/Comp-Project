@@ -49,7 +49,7 @@ importDecl locals [boolean isSubImport = false]
     ;
 
 classDecl locals [boolean hasSuperClass = false]
-    : CLASS name=(ID|'main')
+    : CLASS name=ID
         ('extends' superclass=(ID | 'main') {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
@@ -73,7 +73,7 @@ type locals [boolean isArray=false, boolean isVararg=false]
 methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     : (PUBLIC {$isPublic=true;})?
         (STATIC {$isStatic=true;})?
-        type name=ID
+        type name=(ID|'main')
         LPAREN
             ( paramDecl ( ',' paramDecl )* )?
         RPAREN
@@ -95,7 +95,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
     ;
 
 paramDecl
-    : type name=ID #ParamRule
+    : type name=(ID|'main') #ParamRule
     ;
 
 stmt

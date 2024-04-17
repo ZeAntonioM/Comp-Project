@@ -33,6 +33,31 @@ public class JasminTest {
         testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminFields.ollir");
     }
 
+    @Test
+    public void ollirToJasminReverseHello() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminHello.ollir");
+    }
+
+    @Test
+    public void ollirToJasminImports() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminImports.ollir");
+    }
+
+    @Test
+    public void ollirToJasminMethod() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminMethod.ollir");
+    }
+
+    @Test
+    public void ollirToJasminOperations() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminOperations.ollir");
+    }
+
+    @Test
+    public void ollirToJasminSimple() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminSimple.ollir");
+    }
+
     public static void testOllirToJasmin(String resource, String expectedOutput) {
         JasminResult result = null;
 
