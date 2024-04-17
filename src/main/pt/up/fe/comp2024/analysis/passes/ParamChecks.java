@@ -10,6 +10,7 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -25,13 +26,28 @@ public class ParamChecks extends AnalysisVisitor {
 
     private Void visitMethodCall(JmmNode methodDecl, SymbolTable table) {
         currentMethod = methodDecl.get("name");
+        int idx =1 ;
+        for (var param : methodDecl.getChildren(Kind.PARAM_DECL)){
+            var type = param.getChild(0);
+            System.out.println(type.get("isVararg").equals("true"));
+            if (type.get("isVararg").equals("true") && idx != methodDecl.getChildren(Kind.PARAM_DECL).size() ){
+                var message = String.format("Method %s has a VarArg param that isn't the last element", methodDecl.get("name"));
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        NodeUtils.getLine(methodDecl),
+                        NodeUtils.getColumn(methodDecl),
+                        message,
+                        null
+                ));
+            }
+            idx ++;
+        }
         return null;
     }
 
 
 
     private Void visitMemberCallExpr(JmmNode memberCallExpr, SymbolTable table) {
-
 
         String obj;
 
