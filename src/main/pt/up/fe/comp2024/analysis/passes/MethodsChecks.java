@@ -38,6 +38,10 @@ public class MethodsChecks extends AnalysisVisitor {
             return null;
         }
 
+        if (assigneeType.equals("self")) {
+            assigneeType = className;
+        }
+
         if (superClass.isEmpty() || !imports.contains(superClass) || !Objects.equals(assigneeType, className)) {
             if (!imports.contains(assigneeType)) {
                 var message = String.format("Method %s not found", memberCallExpr.get("name"));
