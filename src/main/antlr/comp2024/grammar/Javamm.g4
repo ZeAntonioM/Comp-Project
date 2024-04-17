@@ -49,7 +49,7 @@ importDecl locals [boolean isSubImport = false]
     ;
 
 classDecl locals [boolean hasSuperClass = false]
-    : CLASS name=ID
+    : CLASS name=(ID|'main')
         ('extends' superclass=(ID | 'main') {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
