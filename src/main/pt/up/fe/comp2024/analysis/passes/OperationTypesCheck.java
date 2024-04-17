@@ -8,6 +8,7 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.sql.SQLOutput;
 import java.util.Objects;
 
 public class OperationTypesCheck extends AnalysisVisitor {
@@ -54,7 +55,9 @@ public class OperationTypesCheck extends AnalysisVisitor {
             ));
         }
 
-        if (binaryExpr.get("type").equals("invalid")){
+        if (binaryExpr.get("type").equals("invalid") && (operator.equals(">") || operator.equals("<"))){
+            binaryExpr.put("type", "boolean");
+        } else {
             binaryExpr.put("type", expectedType);
         }
 

@@ -39,6 +39,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         addVisit(Kind.ARRAY_INIT_EXPR, this::visitArrayInitExpr);
         addVisit(Kind.EXPR_STMT, this::visitExprStmt);
         addVisit(Kind.VAR_DECL, this::visitVarDecl);
+        addVisit(Kind.LENGTH_EXPR, this::visitLengthExpr);
     }
 
     private Void visitMethodCall(JmmNode methodCall, SymbolTable table) {
@@ -57,8 +58,9 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
         var leftType = leftOperand.get("type");
         var rightType = rightOperand.get("type");
+        var op = binaryExpr.get("op");
 
-        if (Objects.equals(leftType, rightType)) {
+        if (Objects.equals(leftType, rightType) && !(op.equals(">") || op.equals("<"))) {
             binaryExpr.put("type", leftType);
         } else {
             binaryExpr.put("type", "invalid");
@@ -256,6 +258,18 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
     private Void visitVarDecl(JmmNode varDecl, SymbolTable table) {
         varDecl.put("type", varDecl.getChildren().get(0).get("name"));
+        return null;
+    }
+
+    private Void visitLengthExpr(JmmNode lengthExpr, SymbolTable table) {
+        var array = lengthExpr.getChildren().get(0);
+        visit(array, table);
+        var arrayType = array.get("type");
+        if (Objects.equals(arrayType, "int[]")) {
+            lengthExpr.put("type", "int");
+        } else {
+            lengthExpr.put("type", "invalid");
+        }
         return null;
     }
 

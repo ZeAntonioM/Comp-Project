@@ -25,6 +25,7 @@ public class ReturnCheck extends AnalysisVisitor {
         currentMethod = methodDecl.get("name");
         var returnNode = table.getReturnType(currentMethod);
         var returnType = returnNode.getName();
+
         if (returnNode.isArray()){
             returnType = "int[]";
         }

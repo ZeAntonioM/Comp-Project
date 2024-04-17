@@ -20,7 +20,8 @@ public class ExpressionConditionTypeCheck extends AnalysisVisitor {
     }
 
     private Void visitIfElseStmt(JmmNode ifElseStmt, SymbolTable table) {
-        if(ifElseStmt.get("type").equals("invalid")){
+        var condition = ifElseStmt.getChildren().get(0);
+        if(!condition.get("type").equals("boolean")){
             var message = "Condition type must be a boolean expression.";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -29,13 +30,16 @@ public class ExpressionConditionTypeCheck extends AnalysisVisitor {
                     message,
                     null
             ));
+        } else {
+            ifElseStmt.put("type", condition.get("type"));
         }
 
         return null;
     }
 
     private Void visitWhileStmt(JmmNode whileStmt, SymbolTable table) {
-        if(whileStmt.get("type").equals("invalid")){
+        var condition = whileStmt.getChildren().get(0);
+        if(!condition.get("type").equals("boolean")){
             var message = "Condition type must be a boolean expression.";
             addReport(Report.newError(
                     Stage.SEMANTIC,
@@ -44,6 +48,8 @@ public class ExpressionConditionTypeCheck extends AnalysisVisitor {
                     message,
                     null
             ));
+        } else {
+            whileStmt.put("type", condition.get("type"));
         }
 
         return null;
