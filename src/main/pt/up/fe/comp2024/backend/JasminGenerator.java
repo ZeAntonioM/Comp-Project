@@ -411,7 +411,7 @@ public class JasminGenerator {
 
         code.append(generators.apply(putFieldInst.getValue()));
 
-        var className = currentMethod.getOllirClass().getClassName();
+        var className = getImportedClass(((ClassType) object.getType()).getName());
 
         code.append("putfield ").append(className).append("/").append(field).append(" ");
 
@@ -428,7 +428,7 @@ public class JasminGenerator {
 
         code.append(getLoadInstruction(object));
 
-        var className = currentMethod.getOllirClass().getClassName();
+        var className = getImportedClass(((ClassType) object.getType()).getName());
 
         code.append("getfield ").append(className).append("/").append(field).append(" ");
 
