@@ -36,9 +36,6 @@ public class ReturnCheck extends AnalysisVisitor {
         var childType = returnChild.get("type");
         var superClass = table.getSuper();
 
-        System.out.println(returnType);
-        System.out.println(returnChild);
-
 
         if (!returnType.equals(childType) && !returnType.equals("void") && !childType.equals(superClass)) {
 
