@@ -13,6 +13,7 @@ class CompileAssignment {
 
         b = a;
         a = b;
+        a = A.bar(A.ber(a,b),a,b);
 
         return 0;
     }

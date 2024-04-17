@@ -142,7 +142,8 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         var parent = node.getParent();
         boolean isAssignStmt = ASSIGN_STMT.check(parent);
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
-        boolean checkForTmp = isAssignStmt || isBinaryExpr;
+        boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
+        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall;
         var classMethodParent = node;
 
         while (!METHOD_DECL.check(classMethodParent)){
@@ -177,8 +178,16 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
                 }
                 break;
             case "import":
-                code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
-                type = OptUtils.toOllirType(new Type("void",true));
+                if (checkForTmp){
+                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                            .append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                    code.append(tmp);
+                }
+                else {
+                    code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                }
+                //code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                if (!isAssignStmt) type = OptUtils.toOllirType(new Type("void",true));
                 break;
             case "class":
                 if (checkForTmp){
@@ -197,7 +206,9 @@ public class OllirExprGeneratorVisitor extends PreorderJmmVisitor<Void, OllirExp
         if (checkForTmp){
             for (int i = 1; i < node.getNumChildren(); i++) {
                 computation.append(", ");
-                computation.append(visit(node.getJmmChild(i)).getCode());
+                var vis = visit(node.getJmmChild(i));
+                computation.insert(i-1,vis.getComputation());
+                computation.append(vis.getCode());
             }
 
             computation.append(")").append(type).append(END_STMT);
