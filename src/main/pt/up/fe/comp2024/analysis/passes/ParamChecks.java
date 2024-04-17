@@ -79,7 +79,7 @@ public class ParamChecks extends AnalysisVisitor {
                     null
             ));
         } else if (varargCount == 1) {
-            compareArgParamTypes(memberCallExpr, params, args, method, varargCount);
+            compareArgParamTypes(memberCallExpr, params, args, method, varargCount, table);
         } else if (args.size() != params.size() && !isUnkown) {
             var message = String.format("Method %s has %d parameters, but %d were given", method, params.size(), args.size());
             addReport(Report.newError(
@@ -91,14 +91,13 @@ public class ParamChecks extends AnalysisVisitor {
             ));
         }
         else {
-            compareArgParamTypes(memberCallExpr, params, args, method, varargCount);
+            compareArgParamTypes(memberCallExpr, params, args, method, varargCount, table);
         }
 
         return null;
     }
 
-    private void compareArgParamTypes(JmmNode memberCallExpr, List<Symbol> params, List<JmmNode> args, String method, int varargCount) {
-
+    private void compareArgParamTypes(JmmNode memberCallExpr, List<Symbol> params, List<JmmNode> args, String method, int varargCount, SymbolTable table) {
         for (int i = 0; i < params.size()-varargCount; i++) {
             var paramType = params.get(i).getType().getName();
 
@@ -106,6 +105,11 @@ public class ParamChecks extends AnalysisVisitor {
                 paramType = "int[]";
             }
             var argType = args.get(i).get("type");
+
+            if (argType.equals("self")) {
+                argType = table.getClassName();
+            }
+
             if (!paramType.equals(argType)) {
                 var message = String.format("Call to method %S was made with incorrect argument types", method);
                 addReport(Report.newError(
@@ -122,9 +126,6 @@ public class ParamChecks extends AnalysisVisitor {
         boolean isArray = false;
         for (int i = params.size()-varargCount; i < args.size(); i++) {
             var argType = args.get(i).get("type");
-            System.out.println(argType);
-            System.out.println(varargType);
-            System.out.println(isArray);
             if (varargType == null) {
                 varargType = argType;
                 isArray = argType.equals("int[]");
