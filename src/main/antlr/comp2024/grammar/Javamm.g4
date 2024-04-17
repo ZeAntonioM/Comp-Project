@@ -45,12 +45,12 @@ program
     ;
 
 importDecl locals [boolean isSubImport = false]
-    : 'import' name+=ID ( '.' name+=ID {$isSubImport = true;})* SEMI #ImportDeclRule
+    : 'import' (name+=ID | 'main') ( '.' (name+=ID | 'main') {$isSubImport = true;})* SEMI #ImportDeclRule
     ;
 
 classDecl locals [boolean hasSuperClass = false]
-    : CLASS name=ID
-        ('extends' superclass=ID {$hasSuperClass = true;})?
+    : CLASS name=(ID|'main')
+        ('extends' superclass=(ID | 'main') {$hasSuperClass = true;})?
         LCURLY
             varDecl* methodDecl*
         RCURLY #ClassDeclRule
@@ -114,7 +114,7 @@ expr
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
     | expr op=( MUL | DIV ) expr #BinaryExpr
-    | expr op=( ADD | SUB ) expr #BinaryExpr 
+    | expr op=( ADD | SUB ) expr #BinaryExpr
     | expr op=( LTHAN | GTHAN | AND ) expr #BinaryExpr
     | LBRAC ( expr ( ',' expr )* )? RBRAC #ArrayInitExpr                       //not for cp2
     | 'new' 'int' LBRAC expr RBRAC #NewArrayExpr                               //not for cp2
