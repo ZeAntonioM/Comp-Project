@@ -9,10 +9,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
 import java.sql.SQLOutput;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 public class MethodsChecks extends AnalysisVisitor {
@@ -31,8 +28,13 @@ public class MethodsChecks extends AnalysisVisitor {
 
         var className = table.getClassName();
         var superClass = table.getSuper();
-        var imports = table.getImports();
         var assigneeType = memberCallExpr.getChildren().get(0).get("type");
+
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
 
         if (!Objects.equals(memberCallExpr.get("type"), "invalid")) {
             return null;
@@ -42,8 +44,8 @@ public class MethodsChecks extends AnalysisVisitor {
             assigneeType = className;
         }
 
-        if (superClass.isEmpty() || !imports.contains(superClass) || !Objects.equals(assigneeType, className)) {
-            if (!imports.contains(assigneeType)) {
+        if (superClass.isEmpty() || !importSet.contains(superClass) || !Objects.equals(assigneeType, className)) {
+            if (!importSet.contains(assigneeType)) {
                 var message = String.format("Method %s not found", memberCallExpr.get("name"));
                 addReport(Report.newError(
                         Stage.SEMANTIC,

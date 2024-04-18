@@ -56,6 +56,10 @@ public class ArrayOperationsCheck extends AnalysisVisitor {
             ));
         }
 
+        if(arrayRefExpr.get("type").equals("invalid")){
+            arrayRefExpr.put("type", "int");
+        }
+
         return null;
 
     }

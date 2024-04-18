@@ -29,7 +29,6 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
 
         var className = table.getClassName();
         var superClass = table.getSuper();
-        var imports = table.getImports();
 
         if (valueType.equals("self")) {
             valueType = className;
@@ -68,6 +67,9 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
             var pathParts = i.split("\\.");
             importSet.add(pathParts[pathParts.length - 1]);
         }
+
+        System.out.println(assigneeType);
+        System.out.println(valueType);
 
         if (Objects.equals(assigneeType, valueType)
                 || importSet.contains(valueType) && importSet.contains(assigneeType)
