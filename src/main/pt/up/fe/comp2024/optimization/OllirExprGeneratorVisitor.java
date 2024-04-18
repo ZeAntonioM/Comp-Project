@@ -149,6 +149,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
         boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
         boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall;
+
+
         var classMethodParent = node;
 
         while (!METHOD_DECL.check(classMethodParent)){
@@ -156,37 +158,38 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         String occurs = this.getClosestOccurrenceVariable(child.get("name"), classMethodParent.get("name"));
-        var tmp = OptUtils.getTemp() +  type;
+        var tmp = OptUtils.getTemp();
 
         switch (occurs){
             case "local", "param":
                 if (checkForTmp){
-                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                    computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
-                    code.append(tmp);
+                    code.append(tmp).append(type);
                 }
                 else {
                     code.append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
                 break;
             case "field":
-                computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                         .append("getfield(this, ").append(lhs_code).append(")").append(type).append(END_STMT);
                 if (checkForTmp){
                     var tmp2 = OptUtils.getTemp() + type;
                     computation.append(tmp2).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                            .append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                            .append("invokevirtual(").append(tmp).append(type).append(", \"").append(node.get("name")).append("\"");
                     code.append(tmp2);
                 }
                 else {
-                    code.append("invokevirtual(").append(tmp).append(", \"").append(node.get("name")).append("\"");
+                    code.append("invokevirtual(").append(tmp).append(type).append(", \"").append(node.get("name")).append("\"");
                 }
                 break;
             case "import":
+                if (isAssignStmt) type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
                 if (checkForTmp){
-                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                    computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
-                    code.append(tmp);
+                    code.append(tmp).append(type);
                 }
                 else {
                     code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
@@ -195,9 +198,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 break;
             case "class":
                 if (checkForTmp){
-                    computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                    computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
-                    code.append(tmp);
+                    code.append(tmp).append(type);
                 }
                 else {
                     code.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
