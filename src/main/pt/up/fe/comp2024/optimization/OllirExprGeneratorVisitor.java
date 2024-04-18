@@ -139,18 +139,20 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(code.toString(), computation.toString());
     }
 
-    private String buildParams(JmmNode node){
+    private List<String> buildParams(JmmNode node){
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
-
+        List<String> params = new ArrayList<>();
         for (var i = 1; i < node.getNumChildren(); i++){
             var child = node.getJmmChild(i);
             var childResult = visit(child);
             code.append(", ").append(childResult.getCode());
             computation.append(childResult.getComputation());
         }
-        computation.append(code);
-        return computation.toString();
+        params.add(computation.toString());
+        params.add(code.toString());
+
+        return params;
     }
 
     private OllirExprResult visitMemberCallExpr(JmmNode node, Void unused) {
@@ -183,9 +185,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                         .append("getfield(this, ").append(lhsCode).append(")").append(type).append(END_STMT);
             }
+            computation.append(params.get(0));
             tmp = tmp.isEmpty() ? lhsCode + type : tmp;
             computation.append(statOrVir).append(tmp).append(", \"").append(node.get("name")).append("\"")
-                    .append(params).append(")").append(endType).append(END_STMT);
+                    .append(params.get(1)).append(")").append(endType).append(END_STMT);
 
         }
         else {
@@ -200,6 +203,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                         .append("getfield(this, ").append(lhsCode).append(")").append(type).append(END_STMT);
                 tmp2 = OptUtils.getTemp() + type;
             }
+            computation.append(params.get(0));
 
             if (tmp2.isEmpty()){
                 tmp2 = tmp;
@@ -207,7 +211,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             }
             computation.append(tmp2).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                     .append(statOrVir).append(tmp).append(", \"").append(node.get("name"))
-                    .append("\"").append(params).append(")").append(type).append(END_STMT);
+                    .append("\"").append(params.get(1)).append(")").append(type).append(END_STMT);
 
             code.append(tmp2);
         }
