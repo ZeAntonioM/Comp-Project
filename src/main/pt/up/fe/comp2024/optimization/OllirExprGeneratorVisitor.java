@@ -148,8 +148,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isAssignStmt = ASSIGN_STMT.check(parent);
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
         boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
-        boolean isReturnStmt = parent.getJmmChild(parent.getNumChildren() - 1).equals(node);
-        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall || isReturnStmt;
+        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall;
 
 
         var classMethodParent = node;
@@ -157,6 +156,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         while (!METHOD_DECL.check(classMethodParent)){
             classMethodParent = classMethodParent.getParent();
         }
+        boolean isReturnStmt = classMethodParent.getJmmChild(classMethodParent.getNumChildren() - 1).equals(node);
+        checkForTmp = checkForTmp || isReturnStmt;
 
         String occurs = this.getClosestOccurrenceVariable(child.get("name"), classMethodParent.get("name"));
         var tmp = OptUtils.getTemp();
