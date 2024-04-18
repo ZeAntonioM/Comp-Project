@@ -7,16 +7,14 @@ class CompileAssignment extends A{
 
     }
 
-    public static int[] foo(int b) {
+    public static int[] foo() {
+        int c;
         A A;
         B b;
 
-        this.lol();
-        b = A;
-        b = new B();
-        A = b;
-        A = A.bar(A.ber(A,b),A,b);
-        A = b.bar(A.ber(A,b),A,b);
+        c = 1;
+
+        A.test(1*2*3*3+c, 4*c*c+c, 139*(1+2)*4);
 
         return 0;
     }
