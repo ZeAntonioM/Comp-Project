@@ -5,7 +5,8 @@ class VarNotDeclared {
     }
 
     public int foo() {
-
-        return x;
+        int[] a;
+        a[this.foo()] = 1;
+        return 0;
     }
  }
