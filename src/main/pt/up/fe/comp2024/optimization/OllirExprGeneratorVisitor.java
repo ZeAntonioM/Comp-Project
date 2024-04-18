@@ -96,7 +96,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     }
 // TODO : IF ALL ELSE FAILS, CHANGE THIS TO ADD CLASSNAME AS TYPE
     private OllirExprResult visitSelfExpr(JmmNode node, Void unused) {
-        return new OllirExprResult("this");
+        return new OllirExprResult("this." + table.getClassName());
     }
 
     private OllirExprResult visitNegExpr(JmmNode node, Void unused) {
@@ -177,7 +177,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var params = buildParams(node);
 
         if (EXPR_STMT.check(parent) ){
-            String type = occurs.equals("import") ? "" : lhsName.equals("this") ? "" :
+            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") ? "" : lhsName.equals("this") ? "" :
                     OptUtils.toOllirType(new Type(node.get("type"), false));
             String endType = OptUtils.toOllirType(new Type("void", false));
             String tmp = "";
