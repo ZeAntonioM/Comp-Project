@@ -148,7 +148,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isAssignStmt = ASSIGN_STMT.check(parent);
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
         boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
-        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall;
+        boolean isReturnStmt = parent.getJmmChild(parent.getNumChildren() - 1).equals(node);
+        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall || isReturnStmt;
 
 
         var classMethodParent = node;
