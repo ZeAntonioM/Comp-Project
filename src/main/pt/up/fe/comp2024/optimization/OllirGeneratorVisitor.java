@@ -1,5 +1,6 @@
 package pt.up.fe.comp2024.optimization;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
@@ -49,6 +50,36 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         setDefaultVisit(this::defaultVisit);
     }
+    public String getClosestOccurrenceVariable(String variableName, String methodSignature) {
+        if (variableName.equals("this")){
+            return "class";
+        }
+
+        for (Symbol s: table.getLocalVariables(methodSignature)){
+            if (s.getName().equals(variableName)){
+                return "local";
+            }
+        }
+        for (Symbol s: table.getParameters(methodSignature)){
+            if (s.getName().equals(variableName)){
+                return "param";
+            }
+        }
+
+        for (Symbol s: table.getFields()){
+            if (s.getName().equals(variableName)){
+                return "field";
+            }
+        }
+
+        for (String s: table.getImports()){
+            if (s.equals(variableName)){
+                return "import";
+            }
+        }
+
+        return "not found";
+    }
 
     private String visitExprStmt(JmmNode jmmNode, Void unused) {
         var child = exprVisitor.visit(jmmNode.getJmmChild(0));
@@ -78,22 +109,39 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(lhs.getComputation());
         code.append(rhs.getComputation());
 
+        var leftName = node.getJmmChild(0).get("name");
+
+        var classMethodParent = node;
+
+        while (!METHOD_DECL.check(classMethodParent)){
+            classMethodParent = classMethodParent.getParent();
+        }
+
+        String occurs = this.getClosestOccurrenceVariable(leftName, classMethodParent.get("name"));
+
         // code to compute self
         // statement has type of lhs
         Type thisType = TypeUtils.getExprType(node.getJmmChild(0), table);
         String typeString = OptUtils.toOllirType(thisType);
 
 
-        code.append(lhs.getCode());
-        code.append(SPACE);
+        if (occurs.equals("field")){
+            code.append("putfield(this, ").append(lhs.getCode()).append(", ").append(rhs.getCode()).append(")").append(".V")
+                    .append(END_STMT);
+        }
+        else {
 
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
+            code.append(lhs.getCode());
+            code.append(SPACE);
 
-        code.append(rhs.getCode());
+            code.append(ASSIGN);
+            code.append(typeString);
+            code.append(SPACE);
 
-        code.append(END_STMT);
+            code.append(rhs.getCode());
+
+            code.append(END_STMT);
+        }
 
         return code.toString();
     }

@@ -270,6 +270,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        var classMethodParent = node;
+        var parent = node.getParent();
+        boolean isAssignStmt = ASSIGN_STMT.check(parent);
+
+        while (!METHOD_DECL.check(classMethodParent)){
+            classMethodParent = classMethodParent.getParent();
+        }
+        var occurs = this.getClosestOccurrenceVariable(node.get("name"), classMethodParent.get("name"));
+
 
         var id = node.get("name");
         Type type = TypeUtils.getExprType(node, table);
@@ -277,7 +287,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         String code = ollirType.equals(".") ? id :  id + ollirType;
 
-        return new OllirExprResult(code);
+        if (occurs.equals("field") && isAssignStmt){
+            if (parent.getJmmChild(1).equals(node)){
+                var tmp = OptUtils.getTemp() + ollirType;
+                computation.append(tmp).append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                        .append("getfield(this, ").append(code).append(")").append(ollirType).append(END_STMT);
+                code = tmp;
+            }
+        }
+
+        return new OllirExprResult(code, computation.toString());
     }
 
     /**

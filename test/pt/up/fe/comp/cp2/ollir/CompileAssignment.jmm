@@ -2,17 +2,17 @@ import A;
 import B;
 
 class CompileAssignment extends A{
-
+int c;
     public static void main(String[] args) {
 
     }
 
     public static int[] foo() {
-        int c;
         A A;
         B b;
 
         c = 1;
+        b = c;
 
         A.test(1*2*3*3+c, 4*c*c+c, 139*(1+2)*4);
 
