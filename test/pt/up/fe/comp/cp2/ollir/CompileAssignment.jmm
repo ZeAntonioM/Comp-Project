@@ -1,4 +1,4 @@
-import A;
+import A.C;
 import B;
 
 class CompileAssignment extends A{
@@ -8,10 +8,12 @@ int c;
     }
 
     public static int[] foo() {
-        A A;
         B b;
+        A ola;
+        ola = new A();
 
-        c = 1;
+        c = C.bar(A,b);
+        c = 1*1+(3*6)+2;
         b = c;
 
         A.test(1*2*3*3+c, 4*c*c+c, 139*(1+2)*4);

@@ -66,8 +66,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         for (String s: table.getImports()){
-            if (s.equals(variableName)){
-                return "import";
+            var split = s.split("\\.");
+            for (String s1: split){
+                if (s1.equals(variableName)){
+                    return "import";
+                }
             }
         }
 
@@ -188,7 +191,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 else {
                     code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
-                //code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 if (!isAssignStmt) type = OptUtils.toOllirType(new Type("void",true));
                 break;
             case "class":

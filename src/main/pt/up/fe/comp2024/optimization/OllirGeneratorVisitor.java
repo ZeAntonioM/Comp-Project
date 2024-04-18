@@ -18,7 +18,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     private static final String SPACE = " ";
     private static final String ASSIGN = ":=";
 
-    private static final String COMMA = ",";
     private final String END_STMT = ";\n";
     private final String NL = "\n";
     private final String L_BRACKET = " {\n";
@@ -73,8 +72,11 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         }
 
         for (String s: table.getImports()){
-            if (s.equals(variableName)){
-                return "import";
+            var split = s.split("\\.");
+            for (String s1: split){
+                if (s1.equals(variableName)){
+                    return "import";
+                }
             }
         }
 
