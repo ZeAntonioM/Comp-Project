@@ -4,6 +4,8 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 
+import java.util.HashSet;
+
 public class Utils {
 
     public static String getType(JmmNode operand, SymbolTable table, String method) {
@@ -30,6 +32,16 @@ public class Utils {
         }
 
         if (table.getImports().contains(operandName)) {
+            return operandName;
+        }
+
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
+        if (importSet.contains(operandName)) {
             return operandName;
         }
 

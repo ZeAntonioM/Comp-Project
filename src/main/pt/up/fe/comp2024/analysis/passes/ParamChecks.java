@@ -29,7 +29,6 @@ public class ParamChecks extends AnalysisVisitor {
         int idx =1 ;
         for (var param : methodDecl.getChildren(Kind.PARAM_DECL)){
             var type = param.getChild(0);
-            System.out.println(type.get("isVararg").equals("true"));
             if (type.get("isVararg").equals("true") && idx != methodDecl.getChildren(Kind.PARAM_DECL).size() ){
                 var message = String.format("Method %s has a VarArg param that isn't the last element", methodDecl.get("name"));
                 addReport(Report.newError(

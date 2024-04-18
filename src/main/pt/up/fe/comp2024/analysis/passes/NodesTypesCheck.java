@@ -12,6 +12,7 @@ import pt.up.fe.comp2024.ast.NodeUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class NodesTypesCheck extends AnalysisVisitor {
 
@@ -171,12 +172,20 @@ public class NodesTypesCheck extends AnalysisVisitor {
         var methodType = table.getReturnType(method);
         var imports = table.getImports();
         var isUnkown = imports.contains(obj);
-        visit(object, table);
+        Set<String> importSet = new HashSet<>();
 
+        for (var i : imports){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
+
+
+        visit(object, table);
         if (methodType != null && !isUnkown) {
             memberCallExpr.put("type", methodType.getName());
         } else {
-            for (var i: imports){
+            for (var i: importSet){
                 if (i.equals(object.get("type"))){
                     memberCallExpr.put("type",i);
                     return null;
