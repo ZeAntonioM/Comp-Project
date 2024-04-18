@@ -12,7 +12,8 @@ int c;
         A ola;
         ola = new A();
 
-        c = C.bar(A,b);
+        c = this.foo();
+        c = B.foo();
         c = 1*1+(3*6)+2;
         b = c;
 
