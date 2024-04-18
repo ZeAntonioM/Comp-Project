@@ -169,13 +169,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         }
 
         var method = memberCallExpr.get("name");
-        var methodTypeNode = table.getReturnType(method);
-        var methodType = methodTypeNode.getName();
-
-        if (methodTypeNode.isArray()){
-            methodType = "int[]";
-        }
-
+        var methodType = table.getReturnType(method);
         var imports = table.getImports();
         var isUnknown = imports.contains(obj);
         Set<String> importSet = new HashSet<>();
@@ -188,8 +182,13 @@ public class NodesTypesCheck extends AnalysisVisitor {
 
 
         visit(object, table);
-        if (methodTypeNode != null && !isUnknown) {
-            memberCallExpr.put("type", methodType);
+        if (methodType != null && !isUnknown) {
+            var typeMethod = methodType.getName();
+
+            if (methodType.isArray()){
+                typeMethod = "int[]";
+            }
+            memberCallExpr.put("type", typeMethod);
         } else {
             for (var i: importSet){
                 if (i.equals(object.get("type"))){
