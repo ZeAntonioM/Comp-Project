@@ -143,6 +143,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         var expr = precedentExpr.getChildren().get(0);
         visit(expr, table);
         precedentExpr.put("type", expr.get("type"));
+        precedentExpr.put("name", expr.get("name"));
         return null;
     }
 
