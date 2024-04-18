@@ -1,12 +1,18 @@
 import A;
 class CompileAssignment extends A{
+int c;
     public static void main(String[] args) {
     }
 
     public int foo() {
         int a;
         int b;
+        A d;
+        A e;
 
+        e = d;
+
+        A.bar(c);
         4 + 3 * 2 / 5;
         return 0;
     }

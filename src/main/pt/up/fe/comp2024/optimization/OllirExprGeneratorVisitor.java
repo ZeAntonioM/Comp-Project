@@ -91,7 +91,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         return new OllirExprResult(tmp + type, computation.toString());
     }
-
+// TODO : IF ALL ELSE FAILS, CHANGE THIS TO ADD CLASSNAME AS TYPE
     private OllirExprResult visitSelfExpr(JmmNode node, Void unused) {
         return new OllirExprResult("this");
     }
@@ -122,6 +122,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
     }
 
+    //TODO delete this
     private OllirExprResult visitPrecedentExpr(JmmNode node, Void unused) {
         var code = new StringBuilder();
         var computation = new StringBuilder();
@@ -281,7 +282,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder computation = new StringBuilder();
         var classMethodParent = node;
         var parent = node.getParent();
-        boolean isAssignStmt = ASSIGN_STMT.check(parent);
 
         while (!METHOD_DECL.check(classMethodParent)){
             classMethodParent = classMethodParent.getParent();
@@ -295,7 +295,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         String code = ollirType.equals(".") ? id :  id + ollirType;
 
-        if (occurs.equals("field") && isAssignStmt){
+        if (occurs.equals("field") ){
             if (parent.getJmmChild(1).equals(node)){
                 var tmp = OptUtils.getTemp() + ollirType;
                 computation.append(tmp).append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
