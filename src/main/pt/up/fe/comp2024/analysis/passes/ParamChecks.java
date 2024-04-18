@@ -11,6 +11,7 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -58,11 +59,16 @@ public class ParamChecks extends AnalysisVisitor {
 
         var type = memberCallExpr.get("type");
         var method = memberCallExpr.get("name");
-        var imports = table.getImports();
-        var isUnkown = imports.contains(obj);
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
+        var isUnkown = importSet.contains(obj);
         var superClass = table.getSuper();
 
-        if (imports.contains(type) || superClass.equals(type) || type.equals("invalid")) {
+        if (importSet.contains(type) || superClass.equals(type) || type.equals("invalid")) {
             return null;
         }
 

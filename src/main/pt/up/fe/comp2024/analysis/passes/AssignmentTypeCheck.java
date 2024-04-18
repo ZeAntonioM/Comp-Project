@@ -8,6 +8,7 @@ import pt.up.fe.comp2024.analysis.AnalysisVisitor;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 public class AssignmentTypeCheck extends AnalysisVisitor {
@@ -62,11 +63,17 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
             return null;
         }
 
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
         if (Objects.equals(assigneeType, valueType)
-                || imports.contains(valueType) && imports.contains(assigneeType)
-                || (!superClass.isEmpty() && superClass.equals(valueType) && imports.contains(valueType))
-                || (imports.contains(valueType))
-                || (!superClass.isEmpty() && superClass.equals(assigneeType) && imports.contains(assigneeType))
+                || importSet.contains(valueType) && importSet.contains(assigneeType)
+                || (!superClass.isEmpty() && superClass.equals(valueType) && importSet.contains(valueType))
+                || (importSet.contains(valueType))
+                || (!superClass.isEmpty() && superClass.equals(assigneeType) && importSet.contains(assigneeType))
         ) {
             assignStmt.put("type", assigneeType);
         } else {

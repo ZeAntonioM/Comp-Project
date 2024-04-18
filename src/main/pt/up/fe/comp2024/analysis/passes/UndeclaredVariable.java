@@ -9,6 +9,8 @@ import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
 
+import java.util.HashSet;
+
 /**
  * Checks if the type of the expression in a return statement is compatible with the method return type.
  *
@@ -53,14 +55,16 @@ public class UndeclaredVariable extends AnalysisVisitor {
             return null;
         }
 
-        if (table.getImports().stream()
-                .anyMatch(importedClass -> importedClass.equals(varRefName))) {
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
+        if (importSet.contains(varRefName)) {
             return null;
         }
 
-        var importSet = table.getImports().stream()
-                .map(importedClass -> importedClass.split("\\.")[importedClass.split("\\.").length - 1])
-                .toArray(String[]::new);
 
 
 
