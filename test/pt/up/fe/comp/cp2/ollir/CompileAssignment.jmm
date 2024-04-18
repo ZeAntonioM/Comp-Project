@@ -1,15 +1,16 @@
-import imp.Obj;
-import io;
 
-class Simple {
+class CallToMethodAssumedInImport{
+boolean a;
 
-    public int add(int a, int b){
-        Obj obj;
-        obj.test(1);
-        return 2;
+    public static void main(String[] args) {
+
+    }
+    public boolean salam(boolean b){
+        return b;
     }
 
-    public int test(int a){
-        return 1;
+    public boolean foo(boolean b) {
+        b = this.salam(this.foo(true));
+        return a;
     }
 }

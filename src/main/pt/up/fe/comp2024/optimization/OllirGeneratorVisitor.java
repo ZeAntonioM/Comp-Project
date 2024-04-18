@@ -162,12 +162,21 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             expr = exprVisitor.visit(node.getJmmChild(0));
         }
 
+        var exprCode = expr.getCode();
+
+        var occurs = this.getClosestOccurrenceVariable(node.getJmmChild(0).get("name"), methodName);
+        if (occurs.equals("field")){
+            var tmp = OptUtils.getTemp() + OptUtils.toOllirType(retType);
+            code.append(tmp).append(SPACE).append(ASSIGN).append(SPACE)
+                    .append("getfield(this, ").append(exprCode).append(").").append(OptUtils.toOllirType(retType)).append(END_STMT);
+            exprCode = tmp;
+        }
         code.append(expr.getComputation());
         code.append("ret");
         code.append(OptUtils.toOllirType(retType));
         code.append(SPACE);
 
-        code.append(expr.getCode());
+        code.append(exprCode);
 
         code.append(END_STMT);
 
@@ -243,11 +252,28 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         //check has return
         if (!retType.equals(".V")) {
                 var expr = exprVisitor.visit(node.getJmmChild(node.getNumChildren() - 1));
+                var exprCode = expr.getCode();
+
+                var retName = "";
+                try {
+                    retName = node.getJmmChild(node.getNumChildren() - 1).get("name");
+                } catch (Exception e) {
+                    // do nothing
+                }
+
+
+                if (getClosestOccurrenceVariable(retName, name).equals("field")) {
+                    var tmp = OptUtils.getTemp() + OptUtils.toOllirType(new Type(node.get("type"), false));
+                    code.append(tmp).append(SPACE).append(ASSIGN).append(OptUtils.toOllirType(new Type(node.get("type"), false))).append(SPACE)
+                            .append("getfield(this, ").append(expr.getCode()).append(")").append(OptUtils.toOllirType(new Type(node.get("type"), false))).append(END_STMT);
+                    exprCode = tmp;
+                }
+
                 code.append(expr.getComputation());
                 code.append("ret");
                 code.append(retType);
                 code.append(SPACE);
-                code.append(expr.getCode());
+                code.append(exprCode);
                 code.append(END_STMT);
         }
         else{
