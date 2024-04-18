@@ -1,19 +1,23 @@
 import A;
+import B;
 class CompileAssignment extends A{
 int c;
     public static void main(String[] args) {
     }
 
     public int foo() {
-        int a;
+        boolean a;
         int b;
         A d;
-        A e;
+        B e;
 
         e = d;
 
-        A.bar(c);
+        a = ! A.bar();
+
+        A.c(c);
         4 + 3 * 2 / 5;
         return 0;
     }
+
 }

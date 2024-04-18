@@ -109,8 +109,8 @@ stmt
 
 expr
     : LPAREN expr RPAREN #PrecedentExpr  //removi o n para funcionar
-    | '!' expr #NegExpr
     | expr '.' name=(ID | 'main' | 'length' | 'String') LPAREN ( expr ( ',' expr )* )? RPAREN #MemberCallExpr
+    | '!' expr #NegExpr
     | 'this' ('.' (name=ID | name='main' | name='length'))? #SelfExpr
     | expr LBRAC expr RBRAC #ArrayRefExpr                                      //not for cp2
     | expr op=( MUL | DIV ) expr #BinaryExpr

@@ -149,7 +149,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isAssignStmt = ASSIGN_STMT.check(parent);
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
         boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
-        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall;
+        boolean isNegExpr = NEG_EXPR.check(parent);
+        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall || isNegExpr;
 
 
         var classMethodParent = node;
@@ -190,6 +191,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             case "import":
                 if (isAssignStmt) type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
                 else if (isReturnStmt) type = OptUtils.toOllirType(table.getReturnType(classMethodParent.get("name")));
+                else if (isNegExpr) type = OptUtils.toOllirType(new Type("boolean", false));
                 if (checkForTmp){
                     computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
@@ -198,7 +200,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 else {
                     computation.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
-                type = isAssignStmt || isReturnStmt ? type : OptUtils.toOllirType(new Type("void", false));
+                type = isAssignStmt || isReturnStmt || isNegExpr ? type : OptUtils.toOllirType(new Type("void", false));
                 break;
             case "class":
                 if (checkForTmp){
