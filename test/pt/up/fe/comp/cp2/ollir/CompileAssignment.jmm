@@ -11,11 +11,9 @@ int c;
         A d;
         B e;
 
-        e = d;
 
-        a = ! A.bar();
 
-        A.c(c);
+        A.c((4+5+3), a, b);
         4 + 3 * 2 / 5;
         return 0;
     }

@@ -143,8 +143,21 @@ public class NodesTypesCheck extends AnalysisVisitor {
     private Void visitPrecedentExpr(JmmNode precedentExpr, SymbolTable table) {
         var expr = precedentExpr.getChildren().get(0);
         visit(expr, table);
-        precedentExpr.put("type", expr.get("type"));
-        precedentExpr.put("name", expr.get("name"));
+        try {
+            var exprType = expr.get("type");
+            precedentExpr.put("type", exprType);
+        } catch (Exception e) {
+            precedentExpr.put("type", "");
+        }
+
+        try {
+            var exprName = expr.get("name");
+            precedentExpr.put("name", exprName);
+        } catch (Exception e) {
+            precedentExpr.put("name", "");
+        }
+        //precedentExpr.put("type", expr.get("type"));
+        //precedentExpr.put("name", expr.get("name"));
         return null;
     }
 
