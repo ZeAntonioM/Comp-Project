@@ -277,7 +277,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String code = ollirType.equals(".") ? id :  id + ollirType;
 
         if (occurs.equals("field") ){
-            if (parent.getJmmChild(1).equals(node)){
+            if (parent.getJmmChild(1 % parent.getNumChildren()).equals(node)){
                 var tmp = OptUtils.getTemp() + ollirType;
                 computation.append(tmp).append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
                         .append("getfield(this, ").append(code).append(")").append(ollirType).append(END_STMT);
