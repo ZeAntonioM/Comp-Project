@@ -208,11 +208,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             case "class":
                 if (checkForTmp){
                     computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                            .append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
+                            .append("invokevirtual(this").append(", \"").append(node.get("name")).append("\"");
                     code.append(tmp).append(type);
                 }
                 else {
-                    computation.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
+                    computation.append("invokevirtual(this").append(", \"").append(node.get("name")).append("\"");
                 }
                 var retType = table.getReturnType(node.get("name"));
                 type = retType != null ? OptUtils.toOllirType(retType) : OptUtils.toOllirType(new Type("void",true));

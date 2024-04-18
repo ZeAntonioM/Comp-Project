@@ -5,18 +5,15 @@ int c;
     public static void main(String[] args) {
     }
 
-    public int foo() {
+    public boolean foo() {
         boolean a;
         int b;
         A d;
         B e;
 
-
-        a = (A.c());
-        A.c((4+5+3), a, b);
-        (A.c());
-        4 + 3 * 2 / 5;
-        return 0;
+        a = this.foo();
+        b = A.foo();
+        return A.foo();
     }
 
 }
