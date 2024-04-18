@@ -41,6 +41,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         addVisit(Kind.EXPR_STMT, this::visitExprStmt);
         addVisit(Kind.VAR_DECL, this::visitVarDecl);
         addVisit(Kind.LENGTH_EXPR, this::visitLengthExpr);
+        addVisit(Kind.NEG_EXPR, this::visitPrecedentExpr);
     }
 
     private Void visitMethodCall(JmmNode methodCall, SymbolTable table) {
@@ -287,6 +288,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
         }
         return null;
     }
+
 
 
 
