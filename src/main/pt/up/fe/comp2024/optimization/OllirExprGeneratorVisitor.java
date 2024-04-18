@@ -170,7 +170,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     code.append(tmp).append(type);
                 }
                 else {
-                    code.append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                    computation.append("invokevirtual(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
                 break;
             case "field":
@@ -183,7 +183,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     code.append(tmp2);
                 }
                 else {
-                    code.append("invokevirtual(").append(tmp).append(type).append(", \"").append(node.get("name")).append("\"");
+                    computation.append("invokevirtual(").append(tmp).append(type).append(", \"").append(node.get("name")).append("\"");
                 }
                 break;
             case "import":
@@ -195,7 +195,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     code.append(tmp).append(type);
                 }
                 else {
-                    code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
+                    computation.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
                 type = isAssignStmt || isReturnStmt ? type : OptUtils.toOllirType(new Type("void", false));
                 break;
@@ -206,7 +206,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     code.append(tmp).append(type);
                 }
                 else {
-                    code.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
+                    computation.append("invokevirtual(this.").append(table.getClassName()).append(", \"").append(node.get("name")).append("\"");
                 }
                 var retType = table.getReturnType(node.get("name"));
                 type = retType != null ? OptUtils.toOllirType(retType) : OptUtils.toOllirType(new Type("void",true));
@@ -215,7 +215,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         StringBuilder intermediate = new StringBuilder();
-        if (checkForTmp){
+       // if (checkForTmp){
             for (int i = 1; i < node.getNumChildren(); i++) {
                 computation.append(", ");
                 var vis = visit(node.getJmmChild(i));
@@ -226,7 +226,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             computation.append(")").append(type).append(END_STMT);
             computation.insert(0, intermediate.toString());
 
-        }
+        /*}
         else {
             for (int i = 1; i < node.getNumChildren(); i++) {
                 code.append(", ");
@@ -237,7 +237,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             code.append(")").append(type).append(";");
             code.insert(0, intermediate.toString());
-        }
+        }*/
         return new OllirExprResult(code.toString(), computation.toString());
     }
 

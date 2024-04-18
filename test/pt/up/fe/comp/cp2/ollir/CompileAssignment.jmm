@@ -5,7 +5,10 @@ class CompileAssignment extends A{
     }
 
     public int foo() {
-        boolean c;
-        return A.foo();
+        int a;
+        int b;
+
+        4 + 3 * 2 / 5;
+        return 0;
     }
 }

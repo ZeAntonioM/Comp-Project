@@ -85,7 +85,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitExprStmt(JmmNode jmmNode, Void unused) {
         var child = exprVisitor.visit(jmmNode.getJmmChild(0));
-        return child.getComputation() + child.getCode() + NL;
+        return child.getComputation();
     }
 
     private String visitImport(JmmNode jmmNode, Void unused) {
@@ -102,6 +102,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     //? seems to be done?
     private String visitAssignStmt(JmmNode node, Void unused) {
 
+        //TODO: CHANGE THIS LEFT SIDE OF ASSIGNMENT TO ID
         var lhs = exprVisitor.visit(node.getJmmChild(0));
         var rhs = exprVisitor.visit(node.getJmmChild(1));
 
@@ -128,8 +129,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
         if (occurs.equals("field")){
-            code.append("putfield(this, ").append(lhs.getCode()).append(", ").append(rhs.getCode()).append(")").append(".V")
-                    .append(END_STMT);
+            code.append("putfield(this, ").append(lhs.getCode()).append(", ").append(rhs.getCode()).append(").V").append(END_STMT);
         }
         else {
 
@@ -262,7 +262,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder();
 
         boolean hasSuperClass = NodeUtils.getBooleanAttribute(node, "hasSuperClass", "false");
-
 
         code.append(table.getClassName());
         if (hasSuperClass) {
