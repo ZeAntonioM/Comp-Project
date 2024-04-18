@@ -120,6 +120,7 @@ public class NodesTypesCheck extends AnalysisVisitor {
             assignStmt.put("type", varType);
         } else {
             assignStmt.put("type", "invalid");
+            Value.put("type", varType);
         }
 
         return null;
@@ -143,18 +144,22 @@ public class NodesTypesCheck extends AnalysisVisitor {
     private Void visitPrecedentExpr(JmmNode precedentExpr, SymbolTable table) {
         var expr = precedentExpr.getChildren().get(0);
         visit(expr, table);
-        try {
-            var exprType = expr.get("type");
-            precedentExpr.put("type", exprType);
-        } catch (Exception e) {
-            precedentExpr.put("type", "");
+        if (precedentExpr.getOptional("type").isEmpty()) {
+            try {
+                var exprType = expr.get("type");
+                precedentExpr.put("type", exprType);
+            } catch (Exception e) {
+                precedentExpr.put("type", "");
+            }
         }
 
-        try {
-            var exprName = expr.get("name");
-            precedentExpr.put("name", exprName);
-        } catch (Exception e) {
-            precedentExpr.put("name", "");
+        if (precedentExpr.getOptional("name").isEmpty()) {
+            try {
+                var exprName = expr.get("name");
+                precedentExpr.put("name", exprName);
+            } catch (Exception e) {
+                precedentExpr.put("name", "");
+            }
         }
         //precedentExpr.put("type", expr.get("type"));
         //precedentExpr.put("name", expr.get("name"));

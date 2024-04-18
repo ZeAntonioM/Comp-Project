@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
+import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
 import javax.print.DocFlavor;
@@ -150,7 +151,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isBinaryExpr = BINARY_EXPR.check(parent);
         boolean isMemberCall = MEMBER_CALL_EXPR.check(parent);
         boolean isNegExpr = NEG_EXPR.check(parent);
-        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall || isNegExpr;
+        boolean isPrecedentExpr = PRECEDENT_EXPR.check(parent);
+        boolean checkForTmp = isAssignStmt || isBinaryExpr || isMemberCall || isNegExpr || isPrecedentExpr;
 
 
         var classMethodParent = node;
@@ -190,6 +192,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 break;
             case "import":
                 if (isAssignStmt) type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
+                else if (isPrecedentExpr) type = OptUtils.toOllirType(new Type(parent.get("type"),false ));
                 else if (isReturnStmt) type = OptUtils.toOllirType(table.getReturnType(classMethodParent.get("name")));
                 else if (isNegExpr) type = OptUtils.toOllirType(new Type("boolean", false));
                 if (checkForTmp){
@@ -200,7 +203,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 else {
                     computation.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
-                type = isAssignStmt || isReturnStmt || isNegExpr ? type : OptUtils.toOllirType(new Type("void", false));
+                type = isAssignStmt || isReturnStmt || isNegExpr || isPrecedentExpr ? type : OptUtils.toOllirType(new Type("void", false));
                 break;
             case "class":
                 if (checkForTmp){
