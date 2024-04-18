@@ -198,8 +198,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     OptUtils.toOllirType(new Type(parent.getJmmChild(0).get("type"), false)) :
                     OptUtils.toOllirType(table.getReturnType(methodNode.get("name")));
 
-            if (MEMBER_CALL_EXPR.check(parent) && occurs.equals("import")){
-                type = OptUtils.toOllirType(new Type("void", false));
+            if (MEMBER_CALL_EXPR.check(parent)){
+                type = OptUtils.toOllirType(new Type(parent.get("type"), false));
             }
 
             var tmp = OptUtils.getTemp() + type;

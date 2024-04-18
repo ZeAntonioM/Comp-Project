@@ -1,5 +1,5 @@
 import A;
-class CompileAssignment extends A{
+class CompileAssignment{
     int c;
 
     public static void main(String[] args) {
@@ -7,17 +7,17 @@ class CompileAssignment extends A{
 
     public int bar() {
         boolean  a;
-        int b;
+        boolean b;
         A d;
 
 
-        A.foo(A.foo(A.foo(A.foo(A.foo()))), A.bar(a));
+        b = this.foo(this.foo(this.foo(a)));
         a = A.foo(b);
         b = d.foo();
         return A.foo(b);
     }
 
-    public int foo(){
+    public boolean foo(boolean a){
         return 0;
     }
 
