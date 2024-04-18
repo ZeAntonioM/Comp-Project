@@ -1,6 +1,7 @@
 import A;
 class CompileAssignment extends A{
-int c;
+    int c;
+
     public static void main(String[] args) {
     }
 
@@ -10,7 +11,7 @@ int c;
         A d;
 
 
-        this.foo((c));
+        A.foo(A.foo(A.foo(A.foo(A.foo()))), A.bar(a));
         a = A.foo(b);
         b = d.foo();
         return A.foo(b);
