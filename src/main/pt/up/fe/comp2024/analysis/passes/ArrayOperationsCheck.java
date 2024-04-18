@@ -9,6 +9,7 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
+import java.util.HashSet;
 import java.util.Objects;
 
 
@@ -31,10 +32,19 @@ public class ArrayOperationsCheck extends AnalysisVisitor {
         var array = arrayRefExpr.getChildren().get(0);
         var index = arrayRefExpr.getChildren().get(1);
 
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+
         var arrayType = array.get("type");
         var indexType = index.get("type");
 
-        if (arrayType != null && !(arrayType.equals("int[]") || arrayType.equals("vararg"))) {
+        System.out.println(arrayType);
+        System.out.println(indexType);
+
+        if (arrayType != null && !(arrayType.equals("int[]") || arrayType.equals("vararg") || importSet.contains(arrayType))) {
             var message = String.format("Cannot perform array access on a non-array variable '%s'", array.get("name"));
             addReport(Report.newError(
                     Stage.SEMANTIC,
