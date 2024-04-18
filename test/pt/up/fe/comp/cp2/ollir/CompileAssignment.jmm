@@ -1,3 +1,4 @@
+import A;
 class CompileAssignment extends A{
     public static void main(String[] args) {
 
@@ -5,6 +6,6 @@ class CompileAssignment extends A{
 
     public int foo() {
         boolean c;
-        return this.foo();
+        return A.foo();
     }
 }

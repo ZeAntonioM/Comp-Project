@@ -188,6 +188,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 break;
             case "import":
                 if (isAssignStmt) type = OptUtils.toOllirType(TypeUtils.getExprType(parent.getJmmChild(0), table));
+                else if (isReturnStmt) type = OptUtils.toOllirType(table.getReturnType(classMethodParent.get("name")));
                 if (checkForTmp){
                     computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
                             .append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
@@ -196,8 +197,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 else {
                     code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
-                if (isReturnStmt) type = OptUtils.toOllirType(table.getReturnType(classMethodParent.get("name")));
-                else type = OptUtils.toOllirType(new Type("void", false));
+                type = isAssignStmt || isReturnStmt ? type : OptUtils.toOllirType(new Type("void", false));
                 break;
             case "class":
                 if (checkForTmp){
