@@ -150,6 +150,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitReturn(JmmNode node, Void unused) {
 
+        //TODO: change the whiles to getAncestor because me stupid
         String methodName = node.getAncestor(METHOD_DECL).map(method -> method.get("name")).orElseThrow();
         Type retType = table.getReturnType(methodName);
 
@@ -248,6 +249,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 code.append(SPACE);
                 code.append(expr.getCode());
                 code.append(END_STMT);
+        }
+        else{
+            code.append("ret.V").append(END_STMT);
         }
 
         code.append(R_BRACKET);
