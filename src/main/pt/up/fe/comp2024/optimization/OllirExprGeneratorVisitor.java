@@ -163,11 +163,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var parent = node.getParent();
         boolean isReturnStmt = methodNode.getJmmChild(methodNode.getNumChildren() - 1).equals(node);
 
-        while(!EXPR_STMT.check(parent) && !ASSIGN_STMT.check(parent) && !RETURN_STMT.check(parent) && !isReturnStmt){
+        while(!EXPR_STMT.check(parent) && !ASSIGN_STMT.check(parent) && !RETURN_STMT.check(parent) && !isReturnStmt && !MEMBER_CALL_EXPR.check(parent)){
             parent = parent.getParent();
         }
         var lhsName = node.getJmmChild(0).get("name");
-        var lhsCode = visit(node.getJmmChild(0)).getCode();
+        var lhsVisit = visit(node.getJmmChild(0));
+        computation.append(lhsVisit.getComputation());
+        var lhsCode = lhsVisit.getCode();
 
         String occurs = this.getClosestOccurrenceVariable(lhsName, methodNode.get("name"));
         var statOrVir = occurs.equals("import") ? "invokestatic(" : "invokevirtual(";
@@ -176,7 +178,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         if (EXPR_STMT.check(parent) ){
             String type = occurs.equals("import") ? "" : lhsName.equals("this") ? "" :
-                    (new Type(node.get("type"), false).toString());
+                    OptUtils.toOllirType(new Type(node.get("type"), false));
             String endType = OptUtils.toOllirType(new Type("void", false));
             String tmp = "";
 

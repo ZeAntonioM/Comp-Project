@@ -9,8 +9,7 @@ class CompileAssignment extends A{
         A d;
 
 
-        A.foo(b);
-        this.foo(1+2+3+4+5+6, 5*4/3-2);
+        this.foo(this.foo().ola());
         a = A.foo(b);
         b = d.foo();
         return A.foo(b);
