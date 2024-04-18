@@ -68,8 +68,6 @@ public class AssignmentTypeCheck extends AnalysisVisitor {
             importSet.add(pathParts[pathParts.length - 1]);
         }
 
-        System.out.println(assigneeType);
-        System.out.println(valueType);
 
         if (Objects.equals(assigneeType, valueType)
                 || importSet.contains(valueType) && importSet.contains(assigneeType)

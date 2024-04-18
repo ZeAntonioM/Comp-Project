@@ -65,7 +65,7 @@ public class ParamChecks extends AnalysisVisitor {
             importSet.add(pathParts[pathParts.length - 1]);
         }
 
-        var isUnkown = importSet.contains(obj);
+        var isUnknown = importSet.contains(obj);
         var superClass = table.getSuper();
 
         if (importSet.contains(type) || superClass.equals(type) || type.equals("invalid")) {
@@ -109,7 +109,7 @@ public class ParamChecks extends AnalysisVisitor {
             ));
         } else if (varargCount == 1) {
             compareArgParamTypes(memberCallExpr, params, args, method, varargCount, table);
-        } else if (args.size() != params.size() && !isUnkown) {
+        } else if (args.size() != params.size() && !isUnknown) {
             var message = String.format("Method %s has %d parameters, but %d were given", method, params.size(), args.size());
             addReport(Report.newError(
                     Stage.SEMANTIC,

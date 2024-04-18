@@ -30,6 +30,7 @@ public class MethodsChecks extends AnalysisVisitor {
         var superClass = table.getSuper();
         var assigneeType = memberCallExpr.getChildren().get(0).get("type");
 
+
         var importSet = new HashSet<>();
         for (var i : table.getImports()){
             var pathParts = i.split("\\.");
@@ -43,6 +44,7 @@ public class MethodsChecks extends AnalysisVisitor {
         if (assigneeType.equals("self")) {
             assigneeType = className;
         }
+
 
         if (superClass.isEmpty() || !importSet.contains(superClass) || !Objects.equals(assigneeType, className)) {
             if (!importSet.contains(assigneeType)) {
