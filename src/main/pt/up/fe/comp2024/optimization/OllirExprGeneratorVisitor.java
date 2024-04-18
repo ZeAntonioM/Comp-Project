@@ -196,7 +196,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 else {
                     code.append("invokestatic(").append(lhs_code).append(", \"").append(node.get("name")).append("\"");
                 }
-                if (!isAssignStmt) type = OptUtils.toOllirType(new Type("void",true));
+                if (isReturnStmt) type = OptUtils.toOllirType(table.getReturnType(classMethodParent.get("name")));
+                else type = OptUtils.toOllirType(new Type("void", false));
                 break;
             case "class":
                 if (checkForTmp){

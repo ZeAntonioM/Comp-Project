@@ -4,8 +4,7 @@ class CompileAssignment extends A{
     }
 
     public int foo() {
-
-
+        boolean c;
         return this.foo();
     }
 }
