@@ -44,8 +44,18 @@ public class JasminTest {
     }
 
     @Test
+    public void ollirToJasminImports2() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminImports2.ollir");
+    }
+
+    @Test
     public void ollirToJasminMethod() {
         testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminMethod.ollir");
+    }
+
+    @Test
+    public void ollirToJasminMethodInvocation() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminMethodInvocation.ollir");
     }
 
     @Test
@@ -57,6 +67,12 @@ public class JasminTest {
     public void ollirToJasminSimple() {
         testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminSimple.ollir");
     }
+
+    @Test
+    public void ollirToJasminMisc() {
+        testOllirToJasmin("pt/up/fe/comp/cp2/jasmin/OllirToJasminMisc.ollir");
+    }
+
 
     public static void testOllirToJasmin(String resource, String expectedOutput) {
         JasminResult result = null;

@@ -1,0 +1,19 @@
+import io.A;
+import io.B;
+Import {
+
+    .method public static main(args.array.String).V {
+        ret.V ;
+    }
+
+    .method public foo().i32 {
+        tmp0.A :=.A new(A).A;
+        invokespecial(tmp0.A, "").V;
+        b.A :=.A tmp0.A;
+        ret.i32 0.i32;
+    }
+
+    .construct Import().V {
+        invokespecial(this, "").V;
+    }
+}

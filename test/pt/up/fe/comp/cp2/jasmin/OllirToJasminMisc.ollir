@@ -1,0 +1,78 @@
+TestCases {
+
+    .field public fieldvar.i32;
+
+    .method public const().i32 {
+
+        putfield(this.TestCases, fieldvar.i32, 5.i32).V;
+
+        t1.i32 :=.i32 getfield(this.TestCases, fieldvar.i32).i32;
+        t2.i32 :=.i32 t1.i32 +.i32 1.i32;
+
+        ret.i32 t2.i32;
+
+    }
+
+    .method public instanceMethod1(param.i32).i32 {
+
+        instanceField1.i32 :=.i32 10.i32;
+
+        localVar1.i32 :=.i32 $1.param.i32 +.i32 instanceField1.i32;
+
+        ret.i32 localVar1.i32;
+
+    }
+
+    .method public instanceMethod2(param.i32).i32 {
+
+        instanceField2.i32 :=.i32 20.i32;
+
+        localVar2.i32 :=.i32 $1.param.i32 +.i32 instanceField2.i32;
+
+        ret.i32 localVar2.i32;
+
+    }
+
+    .method public static main(args.array.String).V {
+
+        localMainVar1.i32 :=.i32 100.i32;
+
+        localMainVar2.i32 :=.i32 200.i32;
+
+        instance.TestCases :=.TestCases new(TestCases).TestCases;
+        invokespecial(instance.TestCases, "<init>").V;
+
+        result1.i32 :=.i32 invokevirtual(instance.TestCases, "instanceMethod1", localMainVar1.i32).i32;
+
+        result2.i32 :=.i32 invokevirtual(instance.TestCases, "instanceMethod2", localMainVar2.i32).i32;
+
+        internVar.i32 :=.i32 invokevirtual(instance.TestCases, "const").i32;
+
+        sum.i32 :=.i32 localMainVar1.i32 +.i32 localMainVar2.i32;
+
+        sub.i32 :=.i32 localMainVar1.i32 -.i32 localMainVar2.i32;
+
+        mul.i32 :=.i32 localMainVar1.i32 *.i32 localMainVar2.i32;
+
+        div.i32 :=.i32 localMainVar1.i32 /.i32 localMainVar2.i32;
+
+        localMainVar3.i32 :=.i32 result1.i32 +.i32 result2.i32;
+
+        returnValue.i32 :=.i32 invokevirtual(instance.TestCases, "instanceMethod1", localMainVar1.i32).i32;
+
+        intValue.i32 :=.i32 10.i32;
+
+        doubleValue.i32 :=.i32 intValue.i32;
+
+        returnVal1.i32 :=.i32 invokevirtual(instance.TestCases, "instanceMethod1", 50.i32).i32;
+
+        returnVal2.i32 :=.i32 invokevirtual(instance.TestCases, "instanceMethod2", 100.i32).i32;
+
+        ret.V;
+
+    }
+
+    .construct TestCases().V {
+        invokespecial(this, "<init>").V;
+    }
+}
