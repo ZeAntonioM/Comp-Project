@@ -1,16 +1,14 @@
-
-class CallToMethodAssumedInImport{
-boolean a;
-
-    public static void main(String[] args) {
-
+import A;
+class Simple {
+    public A foo(){
+        return new A();
     }
-    public boolean salam(boolean b){
-        return b;
+    public boolean bar(){
+        return true;
     }
 
-    public boolean foo(boolean b) {
-        b = this.salam(this.foo(true));
-        return a;
+    public int bee(){
+        this.foo().bar();
+        return 1;
     }
 }
