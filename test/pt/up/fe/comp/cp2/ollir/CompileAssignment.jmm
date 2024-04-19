@@ -8,6 +8,8 @@ class Simple {
     }
 
     public int bee(){
+    int a;
+    a = A.mfao();
        A.foo().bar();
         return 1;
     }
