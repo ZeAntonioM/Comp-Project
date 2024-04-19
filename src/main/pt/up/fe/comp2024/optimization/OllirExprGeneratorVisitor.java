@@ -67,13 +67,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 return "field";
             }
         }
-/*
+
         for (String s : table.getMethods()){
             if (s.equals(variableName)){
                 return "method";
             }
         }
-*/
+
         for (String s: table.getImports()){
             var split = s.split("\\.");
             for (String s1: split){
