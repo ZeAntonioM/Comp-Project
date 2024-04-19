@@ -68,6 +68,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             }
         }
 
+        for (String s : table.getMethods()){
+            if (s.equals(variableName)){
+                return "method";
+            }
+        }
+
         for (String s: table.getImports()){
             var split = s.split("\\.");
             for (String s1: split){
@@ -177,7 +183,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var params = buildParams(node);
 
         if (EXPR_STMT.check(parent) ){
-            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") ? "" : lhsName.equals("this") ? "" :
+            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") || occurs.equals("method") ? "" : lhsName.equals("this") ? "" :
                     OptUtils.toOllirType(new Type(node.get("type"), false));
             String endType = OptUtils.toOllirType(new Type("void", false));
             String tmp = "";
@@ -199,7 +205,15 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     OptUtils.toOllirType(table.getReturnType(methodNode.get("name")));
 
             if (MEMBER_CALL_EXPR.check(parent)){
-                type = OptUtils.toOllirType(new Type(parent.get("type"), false));
+               // type = OptUtils.toOllirType(new Type(parent.get("type"), false));
+                var child = node.getJmmChild(0);
+                while (MEMBER_CALL_EXPR.check(child)){
+                    child = child.getJmmChild(0);
+                }
+                var childName = child.get("name");
+                type = childName.equals("this") ?
+                        OptUtils.toOllirType(table.getReturnType(node.get("name"))) :
+                        OptUtils.toOllirType(new Type(childName, false));
             }
 
             var tmp = OptUtils.getTemp() + type;
