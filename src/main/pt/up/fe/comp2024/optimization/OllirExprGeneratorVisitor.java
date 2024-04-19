@@ -67,7 +67,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 return "field";
             }
         }
-
+/*
+        for (String s : table.getMethods()){
+            if (s.equals(variableName)){
+                return "method";
+            }
+        }
+*/
         for (String s: table.getImports()){
             var split = s.split("\\.");
             for (String s1: split){
@@ -78,10 +84,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         return "not found";
-    }
-
-    public boolean isMethodName(String methodName){
-        return table.getMethods().contains(methodName);
     }
 
     private OllirExprResult visitNewObjExpr(JmmNode node, Void unused) {
@@ -170,29 +172,20 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         while(!EXPR_STMT.check(parent) && !ASSIGN_STMT.check(parent) && !RETURN_STMT.check(parent) && !isReturnStmt && !MEMBER_CALL_EXPR.check(parent)){
             parent = parent.getParent();
         }
-
-        var occursChild  = node.getJmmChild(0);
-        var lhsName = occursChild.get("name");
-        var lhsVisit = visit(occursChild);
+        var lhsName = node.getJmmChild(0).get("name");
+        var lhsVisit = visit(node.getJmmChild(0));
         computation.append(lhsVisit.getComputation());
         var lhsCode = lhsVisit.getCode();
 
-        while(MEMBER_CALL_EXPR.check(occursChild)){
-            occursChild = occursChild.getJmmChild(0);
-        }
-
-        String occurs = this.getClosestOccurrenceVariable(occursChild.get("name"), methodNode.get("name"));
-        boolean isMethod = isMethodName(lhsName);
+        String occurs = this.getClosestOccurrenceVariable(lhsName, methodNode.get("name"));
         var statOrVir = occurs.equals("import") ? "invokestatic(" : "invokevirtual(";
 
         var params = buildParams(node);
 
         if (EXPR_STMT.check(parent) ){
-            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") || isMethod ? "" : lhsName.equals("this") ? "" :
+            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") || occurs.equals("method") ? "" : lhsName.equals("this") ? "" :
                     OptUtils.toOllirType(new Type(node.get("type"), false));
-            String endType = occurs.equals("class") && isMethod ?
-                    OptUtils.toOllirType(table.getReturnType(node.get("name"))) :
-                    OptUtils.toOllirType(new Type("void", false));
+            String endType = OptUtils.toOllirType(new Type("void", false));
             String tmp = "";
 
             if (occurs.equals("field")){
