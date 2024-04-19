@@ -1,14 +1,16 @@
-import A;
-class Simple {
-    public B foo(){
-        return new A();
+
+class CallToMethodAssumedInImport{
+boolean a;
+
+    public static void main(String[] args) {
+
     }
-    public boolean bar(){
-        return true;
+    public boolean salam(boolean b){
+        return b;
     }
 
-    public int bee(){
-       A.foo().bar();
-        return 1;
+    public boolean foo(boolean b) {
+        b = this.salam(this.foo(true));
+        return a;
     }
 }
