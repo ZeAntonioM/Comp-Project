@@ -186,7 +186,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") || occurs.equals("method") ? "" : lhsName.equals("this") ? "" :
                     OptUtils.toOllirType(new Type(node.get("type"), false));
             String endType = occurs.equals("method") ?
-                    OptUtils.toOllirType(table.getReturnType(lhsName)) :
+                    OptUtils.toOllirType(table.getReturnType(node.get("name"))) :
                     OptUtils.toOllirType(new Type("void", false));
             String tmp = "";
 
