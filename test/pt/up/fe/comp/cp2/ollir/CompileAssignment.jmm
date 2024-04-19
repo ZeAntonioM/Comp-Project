@@ -1,14 +1,16 @@
-import A;
-class Simple {
-    public A foo(){
-        return new A();
-    }
-    public boolean bar(){
-        return true;
+class CompileAssignment {
+
+    public static void main(String[] args) {
+
     }
 
-    public int bee(){
-        this.foo().bar();
-        return 1;
+    public int foo() {
+        int a;
+        int b;
+
+        b = 2;
+        a = b;
+
+        return 0;
     }
 }
