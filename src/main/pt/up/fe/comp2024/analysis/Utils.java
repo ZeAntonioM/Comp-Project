@@ -48,4 +48,13 @@ public class Utils {
         return "";
 
     }
+
+    public static HashSet<Object> getImportSet(SymbolTable table) {
+        var importSet = new HashSet<>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+        return importSet;
+    }
 }

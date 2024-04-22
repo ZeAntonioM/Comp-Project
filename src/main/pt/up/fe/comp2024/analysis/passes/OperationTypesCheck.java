@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
+import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
@@ -23,11 +24,7 @@ public class OperationTypesCheck extends AnalysisVisitor {
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         var leftOperand = binaryExpr.getChildren().get(0);
         var rightOperand = binaryExpr.getChildren().get(1);
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImportSet(table);
 
         var leftType = leftOperand.get("type");
         var rightType = rightOperand.get("type");

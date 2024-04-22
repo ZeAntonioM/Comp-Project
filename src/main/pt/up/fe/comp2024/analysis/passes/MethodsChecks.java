@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
+import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
@@ -31,11 +32,7 @@ public class MethodsChecks extends AnalysisVisitor {
         var assigneeType = memberCallExpr.getChildren().get(0).get("type");
 
 
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImportSet(table);
 
         if (!Objects.equals(memberCallExpr.get("type"), "invalid")) {
             return null;
