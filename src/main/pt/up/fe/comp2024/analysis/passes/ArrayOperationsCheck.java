@@ -32,11 +32,7 @@ public class ArrayOperationsCheck extends AnalysisVisitor {
         var array = arrayRefExpr.getChildren().get(0);
         var index = arrayRefExpr.getChildren().get(1);
 
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImports(table);
 
         var arrayType = array.get("type");
         var indexType = index.get("type");

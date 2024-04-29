@@ -59,11 +59,7 @@ public class ParamChecks extends AnalysisVisitor {
 
         var type = memberCallExpr.get("type");
         var method = memberCallExpr.get("name");
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImports(table);
 
         var isUnknown = importSet.contains(obj);
         var superClass = table.getSuper();

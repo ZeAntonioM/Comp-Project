@@ -79,8 +79,7 @@ methodDecl locals [boolean isPublic=false, boolean isStatic = false]
         RPAREN
         LCURLY
             varDecl* ( stmt )*
-            RETURN expr
-            SEMI
+            stmt
         RCURLY #ClassMethod
     | (PUBLIC {$isPublic=true;})?
         (STATIC {$isStatic=true;})?
@@ -103,7 +102,7 @@ stmt
     | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
-    | RETURN expr SEMI #ReturnStmt  //isto é necessário para poder haver varios returns num metodo
+    | RETURN expr SEMI #ReturnStmt
     | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
