@@ -1,3 +1,5 @@
+import A;
+
 class CompileAssignment {
 
     public static void main(String[] args) {
@@ -8,8 +10,7 @@ class CompileAssignment {
         int a;
         int b;
 
-        b = 2;
-        a = b;
+        A.bar(a,b, this.foo());
 
         return 0;
     }
