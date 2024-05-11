@@ -147,12 +147,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var firstChild = node.getJmmChild(0);
         OllirExprResult firstChildVisit = null;
         boolean isChainCall = false;
+
         while (MEMBER_CALL_EXPR.check(firstChild)){
+            if (!isChainCall) {
+                firstChildVisit = visit(firstChild);
+                computation.insert(0, firstChildVisit.getComputation());
+            }
             isChainCall = true;
-            firstChildVisit = visit(firstChild);
-            computation.append(firstChildVisit.getComputation());
             firstChild = firstChild.getJmmChild(0);
         }
+
         var nodeParent = node.getParent();
         var methodDeclParent = node.getAncestor(METHOD_DECL).get();
 

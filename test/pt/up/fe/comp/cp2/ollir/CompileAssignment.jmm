@@ -13,8 +13,8 @@ class CompileAssignment {
     }
 
     public int foo(int b) {
-        A a;
-        a = this.foo().bar();
+        int a;
+        a = this.foo().bar().foo();
         return a;
     }
 }
