@@ -240,16 +240,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         //return
         //check has return
-        if (!retType.equals(".V")) {
-                var expr = exprVisitor.visit(node.getJmmChild(node.getNumChildren() - 1));
-                code.append(expr.getComputation());
-                code.append("ret");
-                code.append(retType);
-                code.append(SPACE);
-                code.append(expr.getCode());
-                code.append(END_STMT);
-        }
-        else{
+        if (retType.equals(".V")) {
             code.append("ret.V").append(END_STMT);
         }
 
