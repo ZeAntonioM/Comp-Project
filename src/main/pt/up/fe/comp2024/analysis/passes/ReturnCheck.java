@@ -35,6 +35,22 @@ public class ReturnCheck extends AnalysisVisitor {
         if (methodDecl.getChildren().isEmpty()) {
             return null;
         }
+
+        long returnStmtCount = methodDecl.getChildren().stream()
+                .filter(child -> child.getKind().equals(Kind.RETURN_STMT.toString()))
+                .count();
+
+        if (returnStmtCount > 1) {
+            var message = String.format("Method %s has more than one return statement", currentMethod);
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    NodeUtils.getLine(methodDecl),
+                    NodeUtils.getColumn(methodDecl),
+                    message,
+                    null
+            ));
+        }
+
         var returnChild = methodDecl.getJmmChild(methodDecl.getChildren().size() - 1);
 
         if (!returnType.equals("void") && !returnChild.getKind().equals(Kind.RETURN_STMT.toString())) {

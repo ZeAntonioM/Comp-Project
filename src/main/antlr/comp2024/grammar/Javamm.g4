@@ -99,10 +99,10 @@ paramDecl
 
 stmt
     : expr EQUALS expr SEMI #AssignStmt
+    | RETURN expr SEMI #ReturnStmt
     | 'if' LPAREN expr RPAREN stmt ('else' stmt) #IfElseStmt
     | 'while' LPAREN expr RPAREN stmt #WhileStmt
     | expr SEMI #ExprStmt
-    | RETURN expr SEMI #ReturnStmt
     | LCURLY ( stmt )* RCURLY #BlockStmt
     ;
 
