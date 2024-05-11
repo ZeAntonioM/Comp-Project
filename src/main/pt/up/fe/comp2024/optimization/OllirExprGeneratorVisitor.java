@@ -196,7 +196,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var isParam = (MEMBER_CALL_EXPR.check(nodeParent) && !nodeParent.getJmmChild(0).equals(node));
 
         // Construct code and computation
-        if (isChainCall || isParam){
+        if (isChainCall || isParam || RETURN_STMT.check(nodeParent) || ASSIGN_STMT.check(nodeParent)){
             var tmp = OptUtils.getTemp();
             computation.append(params.get(0));
             computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)

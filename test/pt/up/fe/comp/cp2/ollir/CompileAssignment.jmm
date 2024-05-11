@@ -6,12 +6,11 @@ class CompileAssignment {
 
     }
 
-    public int foo() {
+    public int foo(int a, int b) {
         int a;
         int b;
 
-        A.bar(a,b, this.foo());
-
-        return 0;
+        a = this.foo(b);
+        return a;
     }
 }
