@@ -35,11 +35,7 @@ public class Utils {
             return operandName;
         }
 
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImports(table);
 
         if (importSet.contains(operandName)) {
             return operandName;
@@ -47,5 +43,14 @@ public class Utils {
 
         return "";
 
+    }
+
+    public static HashSet<String> getImports(SymbolTable table) {
+        var importSet = new HashSet<String>();
+        for (var i : table.getImports()){
+            var pathParts = i.split("\\.");
+            importSet.add(pathParts[pathParts.length - 1]);
+        }
+        return importSet;
     }
 }

@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2024.analysis.AnalysisVisitor;
+import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 import pt.up.fe.specs.util.SpecsCheck;
@@ -55,11 +56,7 @@ public class UndeclaredVariable extends AnalysisVisitor {
             return null;
         }
 
-        var importSet = new HashSet<>();
-        for (var i : table.getImports()){
-            var pathParts = i.split("\\.");
-            importSet.add(pathParts[pathParts.length - 1]);
-        }
+        var importSet = Utils.getImports(table);
 
         if (importSet.contains(varRefName)) {
             return null;
