@@ -6,11 +6,15 @@ class CompileAssignment {
 
     }
 
-    public int foo(int a, int b) {
-        int a;
-        int b;
+    public A bar(){
+        A a;
+        a = new A();
+        return a;
+    }
 
-        a = this.foo(b);
+    public int foo(int b) {
+        A a;
+        a = this.foo().bar();
         return a;
     }
 }
