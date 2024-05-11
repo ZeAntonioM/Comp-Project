@@ -14,7 +14,8 @@ class CompileAssignment {
 
     public int foo(int b) {
         int a;
-        a = this.foo().bar().foo();
+        a = A.foo(1,2,3);
+        a + b;
         return a;
     }
 }
