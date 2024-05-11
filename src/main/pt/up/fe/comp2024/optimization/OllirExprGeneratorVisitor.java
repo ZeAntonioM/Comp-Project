@@ -38,7 +38,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(BINARY_EXPR, this::visitBinExpr);
         addVisit(INTEGER_LITERAL, this::visitInteger);
         addVisit(MEMBER_CALL_EXPR, this::visitMemberCallExpr);
-        addVisit(PRECEDENT_EXPR, this::visitPrecedentExpr);
         addVisit(BOOL_EXPR, this::visitBoolExpr);
         addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(SELF_EXPR, this::visitSelfExpr);
@@ -124,20 +123,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
     }
 
-    //TODO delete this
-    private OllirExprResult visitPrecedentExpr(JmmNode node, Void unused) {
-        var code = new StringBuilder();
-        var computation = new StringBuilder();
-
-        for (var child : node.getChildren()) {
-            var childResult = visit(child);
-            code.append(childResult.getCode());
-            computation.append(childResult.getComputation());
-        }
-
-        return new OllirExprResult(code.toString(), computation.toString());
-    }
-
     private List<String> buildParams(JmmNode node){
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
@@ -160,9 +145,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         // Necessary variables
         var firstChild = node.getJmmChild(0);
+        OllirExprResult firstChildVisit = null;
         boolean isChainCall = false;
         while (MEMBER_CALL_EXPR.check(firstChild)){
             isChainCall = true;
+            firstChildVisit = visit(firstChild);
+            computation.append(firstChildVisit.getComputation());
             firstChild = firstChild.getJmmChild(0);
         }
         var nodeParent = node.getParent();
@@ -193,14 +181,15 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         var params = buildParams(node);
 
         // Check to see if I'm param
-        var isParam = (MEMBER_CALL_EXPR.check(nodeParent) && !nodeParent.getJmmChild(0).equals(node));
+        var isParam = (MEMBER_CALL_EXPR.check(nodeParent));
 
         // Construct code and computation
         if (isChainCall || isParam || RETURN_STMT.check(nodeParent) || ASSIGN_STMT.check(nodeParent)){
             var tmp = OptUtils.getTemp();
+            var name = isChainCall ? firstChildVisit.getCode() : firstChild.get("name");
             computation.append(params.get(0));
             computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                    .append(invokeString).append(firstChild.get("name")).append(", \"").append(node.get("name")).append("\"")
+                    .append(invokeString).append(name).append(", \"").append(node.get("name")).append("\"")
                     .append(params.get(1)).append(")").append(type).append(END_STMT);
             code.append(tmp).append(type);
         }
