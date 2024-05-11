@@ -94,7 +94,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         return new OllirExprResult(tmp + type, computation.toString());
     }
-// TODO : IF ALL ELSE FAILS, CHANGE THIS TO ADD CLASSNAME AS TYPE
     private OllirExprResult visitSelfExpr(JmmNode node, Void unused) {
         return new OllirExprResult("this." + table.getClassName());
     }
@@ -159,71 +158,57 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder code = new StringBuilder();
         StringBuilder computation = new StringBuilder();
 
-        var methodNode = node.getAncestor(METHOD_DECL).orElseThrow();
-        var parent = node.getParent();
-        boolean isReturnStmt = methodNode.getJmmChild(methodNode.getNumChildren() - 1).equals(node);
-
-        while(!EXPR_STMT.check(parent) && !ASSIGN_STMT.check(parent) && !RETURN_STMT.check(parent) && !isReturnStmt && !MEMBER_CALL_EXPR.check(parent)){
-            parent = parent.getParent();
+        // Necessary variables
+        var firstChild = node.getJmmChild(0);
+        boolean isChainCall = false;
+        while (MEMBER_CALL_EXPR.check(firstChild)){
+            isChainCall = true;
+            firstChild = firstChild.getJmmChild(0);
         }
-        var lhsName = node.getJmmChild(0).get("name");
-        var lhsVisit = visit(node.getJmmChild(0));
-        computation.append(lhsVisit.getComputation());
-        var lhsCode = lhsVisit.getCode();
+        var nodeParent = node.getParent();
+        var methodDeclParent = node.getAncestor(METHOD_DECL).get();
 
-        String occurs = this.getClosestOccurrenceVariable(lhsName, methodNode.get("name"));
-        var statOrVir = occurs.equals("import") ? "invokestatic(" : "invokevirtual(";
+        // Get the invoke type (static or virtual)
+        String firstChildOccurrence = getClosestOccurrenceVariable(firstChild.get("name"), methodDeclParent.get("name"));
+        boolean staticCall = firstChildOccurrence.equals("import");
+        String invokeString = staticCall ? "invokestatic(" : "invokevirtual(";
 
+        // Get the type to invoke
+        String type = "";
+
+        if (EXPR_STMT.check(nodeParent)) nodeParent = nodeParent.getParent();
+
+        if (METHOD_DECL.check(nodeParent) || MEMBER_CALL_EXPR.check(nodeParent)){
+           if (firstChildOccurrence.equals("import")) type = OptUtils.toOllirType(new Type("void", false));
+           else if (firstChildOccurrence.equals("class")) type = OptUtils.toOllirType(table.getReturnType(node.get("name")));
+        }
+        else if (ASSIGN_STMT.check(nodeParent)){
+            type = OptUtils.toOllirType(TypeUtils.getExprType(nodeParent.getJmmChild(0), table));
+        }
+        else if (RETURN_STMT.check(nodeParent)){
+            type = OptUtils.toOllirType(TypeUtils.getExprType(methodDeclParent, table));
+        }
+
+        // Get all the params
         var params = buildParams(node);
 
-        if (EXPR_STMT.check(parent) ){
-            String type = occurs.equals("import") || occurs.equals("local") || occurs.equals("param") ? "" : lhsName.equals("this") ? "" :
-                    OptUtils.toOllirType(new Type(node.get("type"), false));
-            String endType = OptUtils.toOllirType(new Type("void", false));
-            String tmp = "";
+        // Check to see if I'm param
+        var isParam = (MEMBER_CALL_EXPR.check(nodeParent) && !nodeParent.getJmmChild(0).equals(node));
 
-            if (occurs.equals("field")){
-                tmp = OptUtils.getTemp() + type;
-                computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                        .append("getfield(this, ").append(lhsCode).append(")").append(type).append(END_STMT);
-            }
+        // Construct code and computation
+        if (isChainCall || isParam || RETURN_STMT.check(nodeParent) || ASSIGN_STMT.check(nodeParent)){
+            var tmp = OptUtils.getTemp();
             computation.append(params.get(0));
-            tmp = tmp.isEmpty() ? lhsCode + type : tmp;
-            computation.append(statOrVir).append(tmp).append(", \"").append(node.get("name")).append("\"")
-                    .append(params.get(1)).append(")").append(endType).append(END_STMT);
-
+            computation.append(tmp).append(type).append(SPACE).append(ASSIGN).append(type).append(SPACE)
+                    .append(invokeString).append(firstChild.get("name")).append(", \"").append(node.get("name")).append("\"")
+                    .append(params.get(1)).append(")").append(type).append(END_STMT);
+            code.append(tmp).append(type);
         }
         else {
-            var type = ASSIGN_STMT.check(parent) ?
-                    OptUtils.toOllirType(new Type(parent.getJmmChild(0).get("type"), false)) :
-                    OptUtils.toOllirType(table.getReturnType(methodNode.get("name")));
-
-            if (MEMBER_CALL_EXPR.check(parent)){
-                type = OptUtils.toOllirType(new Type(node.get("type"), false));
-            }
-
-            var tmp = OptUtils.getTemp() + type;
-            String tmp2 = "";
-
-            if (occurs.equals("field")){
-                computation.append(tmp).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                        .append("getfield(this, ").append(lhsCode).append(")").append(type).append(END_STMT);
-                tmp2 = OptUtils.getTemp() + type;
-            }
             computation.append(params.get(0));
-
-            if (tmp2.isEmpty()){
-                tmp2 = tmp;
-                tmp = lhsCode;
-            }
-            computation.append(tmp2).append(SPACE).append(ASSIGN).append(type).append(SPACE)
-                    .append(statOrVir).append(tmp).append(", \"").append(node.get("name"))
-                    .append("\"").append(params.get(1)).append(")").append(type).append(END_STMT);
-
-            code.append(tmp2);
+            code.append(invokeString).append(firstChild.get("name")).append(", \"").append(node.get("name")).append("\"")
+                    .append(params.get(1)).append(")").append(type).append(END_STMT);
         }
-
-
 
         return new OllirExprResult(code.toString(), computation.toString());
     }
