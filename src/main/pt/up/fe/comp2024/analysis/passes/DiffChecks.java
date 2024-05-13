@@ -79,6 +79,7 @@ public class DiffChecks extends AnalysisVisitor {
 
     private Void visitMethods(JmmNode node, SymbolTable table){
         Set<String> set = new HashSet<>();
+        Set<String> localVars = new HashSet<>();
         for (var param: node.getChildren(Kind.PARAM_DECL)) {
             if(set.contains(param.get("name"))){
                 var message = String.format("Duplicated parameter %s", param.get("name"));
@@ -104,12 +105,16 @@ public class DiffChecks extends AnalysisVisitor {
                         null
                 ));
             }
-            else set.add(varRef.get("name"));
+            else {
+                set.add(varRef.get("name"));
+                localVars.add(varRef.get("name"));
+            }
+
         }
 
         List<JmmNode> varReferences = node.getDescendants(Kind.VAR_REF_EXPR);
         for (JmmNode varRef : varReferences) {
-            if (fields.contains(varRef.get("name")) && node.get("isStatic").equals("true")) {
+            if (fields.contains(varRef.get("name")) && node.get("isStatic").equals("true") && !localVars.contains(varRef.get("name"))) {
                 var message = String.format("Variable %s is a field", varRef.get("name"));
                 addReport(Report.newError(
                         Stage.SEMANTIC,
