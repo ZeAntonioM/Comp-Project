@@ -202,8 +202,15 @@ public class JasminGenerator {
         var type = assign.getTypeOfAssign().getTypeOfElement();
 
         switch (type) {
-            case INT32, BOOLEAN -> code.append("istore ").append(reg).append(NL);
-            case ARRAYREF, OBJECTREF -> code.append("astore ").append(reg).append(NL);
+            case INT32, BOOLEAN -> code.append("istore");
+            case STRING, ARRAYREF, OBJECTREF -> code.append("astore");
+            default -> throw new NotImplementedException(operand.getType().getTypeOfElement());
+        };
+
+        if (reg < 4) {
+            code.append("_").append(reg).append(NL);
+        } else {
+            code.append(" ").append(reg).append(NL);
         }
 
         return code.toString();
@@ -214,18 +221,53 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
-        return "ldc " + literal.getLiteral() + NL;
+
+        ElementType type = literal.getType().getTypeOfElement();
+
+        // ldc also works for strings, floats, etc...
+        if ((type != ElementType.INT32) && (type != ElementType.BOOLEAN)) {
+            return "ldc " + literal.getLiteral() + NL;
+        }
+
+        var value = Integer.parseInt(literal.getLiteral());
+        if ( (value <= 5) && (value >= -1)) {
+            if (value == -1) {
+                return "iconst_m1" + NL;
+            }
+            return "iconst_" + value + NL;
+        }
+        if ( (value <= 127) && (value >= -128)) {
+            return "bipush " + value + NL;
+        }
+        if ( (value <= 32767) && (value >= -32768)) {
+            return "sipush " + value + NL;
+        }
+        else {
+            return "ldc " + value + NL;
+        }
+
     }
 
     private String generateOperand(Operand operand) {
+
+        var code = new StringBuilder();
+
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
-        return switch (operand.getType().getTypeOfElement()) {
-            case INT32, BOOLEAN -> "iload " + reg + NL;
-            case STRING, ARRAYREF, OBJECTREF -> "aload " + reg + NL;
-            default -> null;
+        switch (operand.getType().getTypeOfElement()) {
+            case INT32, BOOLEAN -> code.append("iload");
+            case STRING, ARRAYREF, OBJECTREF -> code.append("aload");
+            default -> throw new NotImplementedException(operand.getType().getTypeOfElement());
         };
+
+        if (reg < 4) {
+            code.append("_").append(reg).append(NL);
+        } else {
+            code.append(" ").append(reg).append(NL);
+        }
+
+        return code.toString();
 
     }
 
@@ -243,7 +285,6 @@ public class JasminGenerator {
             case SUB -> "isub ";
             case DIV -> "idiv ";
             case AND -> "iand ";
-            case GTH -> "if_icmpgt ";
             case LTH -> "if_icmplt ";
             default -> null;
         };
@@ -495,7 +536,7 @@ public class JasminGenerator {
             case BOOLEAN -> code = "Z";
             case VOID -> code = "V";
             case STRING -> code = "Ljava/lang/String;";
-            case ARRAYREF -> code = "[Ljava/lang/String;";
+            case ARRAYREF -> code = "[" + this.getType(((ArrayType) type).getElementType());
             case OBJECTREF -> code = "L"+getImportedClass(((ClassType) type).getName())+";";
             default -> code = null;
         }
