@@ -12,6 +12,7 @@ import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,8 @@ public class JasminGenerator {
     int currentStack = 0;
     int locals = 0;
 
+    int branchCounter = 0;
+
     private final FunctionClassMap<TreeNode, String> generators;
 
     public JasminGenerator(OllirResult ollirResult) {
@@ -57,10 +60,14 @@ public class JasminGenerator {
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
+        generators.put(UnaryOpInstruction.class, this::generateUnaryOp);
         generators.put(CallInstruction.class, this::generateCallInstruction);
         generators.put(PutFieldInstruction.class, this::generatePutFieldInstruction);
         generators.put(GetFieldInstruction.class, this::generateGetFieldInstruction);
+        generators.put(CondBranchInstruction.class, this::generateCondBranch);
+        generators.put(GotoInstruction.class, this::generateGoToInstruction);
         generators.put(ReturnInstruction.class, this::generateReturn);
+
     }
 
     public List<Report> getReports() {
@@ -149,6 +156,7 @@ public class JasminGenerator {
         for (var param: method.getParams()) {
             code.append(getType(param.getType()));
         }
+        updateLocals(method.getParams().size());
 
         var returnType = this.getType(method.getReturnType());
 
@@ -157,10 +165,19 @@ public class JasminGenerator {
 
         var methodBody = new StringBuilder();
         for (var inst : method.getInstructions()) {
+
+            for (var label : method.getLabels().entrySet()) {
+                if (label.getValue().equals(inst)) {
+                    methodBody.append(label.getKey()).append(":").append(NL);
+                }
+            }
+
             var instCode = StringLines.getLines(generators.apply(inst)).stream()
                     .collect(Collectors.joining(NL + TAB, TAB, NL));
 
             methodBody.append(instCode);
+
+
 
             if ((inst.getInstType() == InstructionType.CALL) &&  ((CallInstruction) inst).getReturnType().getTypeOfElement() != ElementType.VOID) {
                 methodBody.append("pop").append(NL);
@@ -294,17 +311,102 @@ public class JasminGenerator {
         code.append(generators.apply(binaryOp.getRightOperand()));
 
         // apply operation
-        var op = switch (binaryOp.getOperation().getOpType()) {
-            case ADD -> "iadd ";
-            case MUL -> "imul ";
-            case SUB -> "isub ";
-            case DIV -> "idiv ";
-            case AND -> "iand ";
-            case LTH -> "if_icmplt ";
-            default -> null;
+        var op = new StringBuilder();
+        switch (binaryOp.getOperation().getOpType()) {
+            case ADD:
+                op.append("iadd ");
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+                break;
+            case MUL:
+                op.append("imul ");
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+                break;
+            case SUB:
+                op.append("isub ");
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+                break;
+            case DIV:
+                op.append("idiv ");
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+                break;
+            case AND:
+                // TODO make this branched
+                op.append("iand ");
+                break;
+            case LTH:
+                op.append("isub ").append(NL);
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+
+                op.append("iflt ");
+                updateStack(-1); // pop boolean value
+
+                op.append(this.boolBranching());
+                break;
+            case GTH:
+                op.append("isub ").append(NL);
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+
+                op.append("ifgt ");
+                updateStack(-1); // pop boolean value
+
+                op.append(this.boolBranching());
+                break;
+            case EQ:
+                op.append("isub ").append(NL);
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+
+                op.append("ifeq ");
+                updateStack(-1); // pop boolean value
+
+                op.append(this.boolBranching());
+                break;
+            case NEQ:
+                op.append("isub ").append(NL);
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
+
+                op.append("ifne ");
+                updateStack(-1); // pop boolean value
+
+                op.append(this.boolBranching());
+                break;
+
+            default:
+                break;
         };
 
-        updateStack(-2); // pop two values
+        code.append(op).append(NL);
+
+        return code.toString();
+    }
+
+    private String generateUnaryOp(UnaryOpInstruction unaryOp) {
+        var code = new StringBuilder();
+
+        // load value
+        code.append(generators.apply(unaryOp.getOperand()));
+
+        // apply operation
+        var op = new StringBuilder();
+        System.out.println("UNARY: " + unaryOp);
+        switch (unaryOp.getOperation().getOpType()) {
+            // XOR -> 1 if 1 operand is true, 0 if both are true or false
+            case NOTB:
+                op.append("iconst_1 ").append(NL).append("ixor ");
+                break;
+            default:
+                break;
+        };
+
+        updateStack(1); //iconst_1 pushes a value
+        updateStack(-2); //xor pops two values
         updateStack(1); // push result
 
         code.append(op).append(NL);
@@ -334,7 +436,7 @@ public class JasminGenerator {
             case arraylength:
 
                 code.append(generators.apply(callInst.getCaller()));
-                code.append(TAB).append("arraylength").append(NL);
+                code.append("arraylength").append(NL);
                 updateStack(-1); // pop array reference
                 updateStack(1); // push length
                 break;
@@ -513,6 +615,24 @@ public class JasminGenerator {
         return code.toString();
     }
 
+    private String generateCondBranch(CondBranchInstruction condBranch){
+
+        var code = new StringBuilder();
+
+        code.append(generators.apply(condBranch.getCondition()));
+
+        //Check if the condition is true or false
+        code.append("ifne ").append(condBranch.getLabel()).append(NL);
+        updateStack(-1); // pops boolean value
+
+        return code.toString();
+
+    }
+
+    private String generateGoToInstruction(GotoInstruction gotoInst) {
+        return "goto " + gotoInst.getLabel() + NL;
+    }
+
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
@@ -598,6 +718,30 @@ public class JasminGenerator {
 
     private void updateLocals(int value) {
         locals = Math.max(value, locals);
+    }
+
+    private String boolBranching() {
+        var code = new StringBuilder();
+
+        // goto if correct
+        code.append("branch_").append(branchCounter).append(NL);
+
+        // if not equal
+        code.append("iconst_0").append(NL);
+        updateStack(1);
+        code.append("goto ").append("end_branch_").append(branchCounter).append(NL).append(NL);
+
+        // if equal
+        code.append("branch_").append(branchCounter).append(":").append(NL);
+        code.append("iconst_1").append(NL).append(NL);
+        updateStack(1);
+
+        // end branch
+        code.append("end_branch_").append(branchCounter).append(":");
+
+        branchCounter++;
+
+        return code.toString();
     }
 
 
