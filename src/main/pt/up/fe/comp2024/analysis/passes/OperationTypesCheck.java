@@ -9,8 +9,7 @@ import pt.up.fe.comp2024.analysis.Utils;
 import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.NodeUtils;
 
-import java.sql.SQLOutput;
-import java.util.HashSet;
+
 import java.util.Objects;
 
 public class OperationTypesCheck extends AnalysisVisitor {

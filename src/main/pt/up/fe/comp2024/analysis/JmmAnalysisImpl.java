@@ -7,6 +7,8 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp2024.analysis.optimization.ConstantFolding;
+import pt.up.fe.comp2024.analysis.optimization.ConstantPropagation;
 import pt.up.fe.comp2024.analysis.passes.*;
 import pt.up.fe.comp2024.symboltable.JmmSymbolTableBuilder;
 
@@ -51,6 +53,17 @@ public class JmmAnalysisImpl implements JmmAnalysis {
 
         }
 
+        if(parserResult.getConfig().get("optimize") != null && parserResult.getConfig().get("optimize").equals("true")){
+            ConstantPropagation constantPropagationVisitor = new ConstantPropagation();
+            ConstantFolding constantFoldingVisitor = new ConstantFolding();
+            boolean modified;
+            do {
+                constantPropagationVisitor.optimize(rootNode, table);
+                constantFoldingVisitor.optimize(rootNode, table);
+                modified = constantPropagationVisitor.modified || constantFoldingVisitor.modified;
+            } while (modified);
+
+        }
         return new JmmSemanticsResult(parserResult, table, reports);
     }
 }
