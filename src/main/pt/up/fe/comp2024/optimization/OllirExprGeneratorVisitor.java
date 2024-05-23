@@ -228,9 +228,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 }
             }
             else {
-                var child = visit(node.getJmmChild(i));
-                computation.append(child.getComputation());
-                code.append(", ").append(child.getCode());
+                var child = node.getJmmChild(i);
+                var childResult = visit(child);
+                code.append(", ").append(childResult.getCode());
+                computation.append(childResult.getComputation());
             }
         }
         params.add(computation.toString());

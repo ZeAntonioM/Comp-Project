@@ -155,7 +155,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(lhs.getComputation());
         code.append(rhs.getComputation());
 
-        var leftName = node.getJmmChild(0).get("name");
+        var child = node.getJmmChild(0);
+        if (ARRAY_REF_EXPR.check(child)) child = child.getJmmChild(0);
+        var leftName = child.get("name");
 
         var classMethodParent = node;
 
