@@ -329,10 +329,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         StringBuilder computation = new StringBuilder();
 
-        // code to compute the children
-        computation.append(lhs.getComputation());
-        computation.append(rhs.getComputation());
-
         // code to compute self
         Type resType = TypeUtils.getExprType(node, table);
         String resOllirType = OptUtils.toOllirType(resType);
