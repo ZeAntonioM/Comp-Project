@@ -29,6 +29,7 @@ public class TypeUtils {
             case BINARY_EXPR -> getBinExprType(expr);
             case VAR_REF_EXPR -> getVarExprType(expr, table);
             case INTEGER_LITERAL -> new Type(INT_TYPE_NAME, false);
+            case ARRAY_REF_EXPR -> new Type(INT_TYPE_NAME, false);
             case BOOL_EXPR, NEG_EXPR -> new Type(BOOLEAN_TYPE_NAME,false);
             default -> new Type(expr.get("name"), false);
         };
