@@ -114,7 +114,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                     .append(lhs.getCode()).append("[").append(index.getCode()).append("]").append(ollirType).append(END_STMT);
             code.append(tmp);
         } else {
-            code.append(lhs.getCode()).append("[").append(index.getCode()).append("]").append(ollirType);
+            code.append(lhs.getCode()).append(".array.i32").append("[").append(index.getCode()).append("]").append(ollirType);
         }
 
         return new OllirExprResult(code.toString(), computation.toString());
