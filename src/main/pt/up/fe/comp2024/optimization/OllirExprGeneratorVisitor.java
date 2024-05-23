@@ -1,19 +1,14 @@
 package pt.up.fe.comp2024.optimization;
 
-import org.junit.Test;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
-import pt.up.fe.comp2024.ast.Kind;
 import pt.up.fe.comp2024.ast.TypeUtils;
 
-import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import static pt.up.fe.comp2024.ast.Kind.*;
 
@@ -42,9 +37,82 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(NEG_EXPR, this::visitNegExpr);
         addVisit(SELF_EXPR, this::visitSelfExpr);
         addVisit(NEW_OBJ_EXPR, this::visitNewObjExpr);
+        addVisit(ARRAY_REF_EXPR, this::visitArrayRefExpr);
+        addVisit(ARRAY_INIT_EXPR, this::visitArrayInitExpr);
+        addVisit(NEW_ARRAY_EXPR, this::visitNewArrayExpr);
+        addVisit(LENGTH_EXPR, this::visitLengthExpr);
 
         setDefaultVisit(this::defaultVisit);
     }
+
+    private OllirExprResult visitLengthExpr(JmmNode jmmNode, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+
+        var array = visit(jmmNode.getJmmChild(0));
+        var tmp = OptUtils.getTemp() + ".i32";
+
+        computation.append(array.getComputation());
+
+        computation.append(tmp).append(SPACE).append(ASSIGN).append(".i32").append(SPACE)
+                .append("arraylength(").append(array.getCode()).append(").i32").append(END_STMT);
+
+        code.append(tmp);
+
+        return new OllirExprResult(code.toString(), computation.toString());
+    }
+
+    private OllirExprResult visitNewArrayExpr(JmmNode jmmNode, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+
+       var size = visit(jmmNode.getJmmChild(0));
+
+       computation.append(size.getComputation());
+
+       code.append("new(array,").append(size.getCode()).append(").array.i32");
+
+        return new OllirExprResult(code.toString(), computation.toString());
+    }
+
+    private OllirExprResult visitArrayInitExpr(JmmNode jmmNode, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+
+        var tmp = OptUtils.getTemp();
+
+        computation.append(tmp).append(".array.i32").append(SPACE).append(ASSIGN).append(SPACE).append("new(array,").append(SPACE)
+                .append(jmmNode.getNumChildren()).append(".i32).array.i32").append(END_STMT);
+
+        for (int i = 0; i < jmmNode.getNumChildren(); i++){
+            var child = jmmNode.getJmmChild(i);
+            var childResult = visit(child);
+            computation.append(childResult.getComputation());
+            computation.append(tmp).append("[").append(i).append(".i32].i32").append(SPACE).append(ASSIGN).append(SPACE).append(childResult.getCode()).append(END_STMT);
+        }
+
+        code.append(tmp).append(".array.i32");
+
+        return new OllirExprResult(code.toString(), computation.toString());
+        
+    }
+
+    private OllirExprResult visitArrayRefExpr(JmmNode jmmNode, Void unused) {
+        var lhs = visit(jmmNode.getJmmChild(0));
+        var index = visit(jmmNode.getJmmChild(1));
+
+        StringBuilder computation = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+        computation.append(lhs.getComputation());
+        computation.append(index.getComputation());
+
+        String olirType = ".i32";
+
+        code.append(lhs.getCode()).append("[").append(index.getCode()).append("]").append(olirType);
+
+        return new OllirExprResult(code.toString(), computation.toString());
+    }
+
     public String getClosestOccurrenceVariable(String variableName, String methodSignature) {
         if (variableName.equals("this")){
             return "class";
@@ -210,9 +278,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
             code.append(tmp2);
         }
-
-
-
         return new OllirExprResult(code.toString(), computation.toString());
     }
 
@@ -242,12 +307,33 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String resOllirType = OptUtils.toOllirType(resType);
         String code = OptUtils.getTemp() + resOllirType;
 
-        computation.append(code).append(SPACE)
-                .append(ASSIGN).append(resOllirType).append(SPACE)
-                .append(lhs.getCode()).append(SPACE);
+        if (node.get("op").equals("&&")) {
 
-        computation.append(node.get("op")).append(resOllirType).append(SPACE)
-                .append(rhs.getCode()).append(END_STMT);
+            computation.append(lhs.getComputation());
+
+            var l1 = OptUtils.getTemp("L");
+            var end = OptUtils.getTemp("END");
+            computation.append("if (").append(lhs.getCode()).append(") goto ").append(l1).append(END_STMT);
+            computation.append(code).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE).append("0.bool").append(END_STMT);
+            computation.append("goto ").append(end).append(END_STMT);
+
+            computation.append(l1).append(":\n");
+            computation.append(rhs.getComputation());
+            computation.append(code).append(SPACE).append(ASSIGN).append(resOllirType).append(SPACE).append(rhs.getCode()).append(END_STMT);
+
+            computation.append(end).append(":\n");
+
+        } else {
+            computation.append(lhs.getComputation());
+            computation.append(rhs.getComputation());
+
+            computation.append(code).append(SPACE)
+                    .append(ASSIGN).append(resOllirType).append(SPACE)
+                    .append(lhs.getCode()).append(SPACE);
+
+            computation.append(node.get("op")).append(resOllirType).append(SPACE)
+                    .append(rhs.getCode()).append(END_STMT);
+        }
 
         return new OllirExprResult(code, computation);
     }
@@ -269,6 +355,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String ollirType = OptUtils.toOllirType(type);
 
         String code = ollirType.equals(".") ? id :  id + ollirType;
+        code = ARRAY_REF_EXPR.check(parent) ? id : code;
 
         if (occurs.equals("field") ){
             if (parent.getJmmChild(1 % parent.getNumChildren()).equals(node)){
