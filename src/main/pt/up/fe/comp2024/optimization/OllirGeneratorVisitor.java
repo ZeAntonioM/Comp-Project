@@ -270,7 +270,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(")");
 
         // type
-        var retType = OptUtils.toOllirType(new Type(node.get("type"), false));
+        var retType = isMain ? OptUtils.toOllirType(new Type(node.get("type"), false)) : OptUtils.toOllirType(node.getJmmChild(0));
         code.append(retType);
         code.append(L_BRACKET);
 

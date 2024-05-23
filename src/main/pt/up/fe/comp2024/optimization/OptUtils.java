@@ -2,7 +2,6 @@ package pt.up.fe.comp2024.optimization;
 
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
 import static pt.up.fe.comp2024.ast.Kind.TYPE;
 
@@ -31,24 +30,26 @@ public class OptUtils {
 
         String typeName = typeNode.get("name");
 
-        return toOllirType(typeName);
+        return toOllirType(typeName, Boolean.parseBoolean(typeNode.get("isArray")));
     }
 
     public static String toOllirType(Type type) {
-        return toOllirType(type.getName());
+        return toOllirType(type.getName(), type.isArray());
     }
 
-    private static String toOllirType(String typeName) {
+    private static String toOllirType(String typeName, boolean isArray) {
 
         String type = "." + switch (typeName) {
-            case "int" -> "i32";
-            case "boolean" -> "bool";
-            case "void" -> "V";
-            default -> typeName;
+            case "int":
+                if (isArray) yield "array.i32";
+                else yield "i32";
+            case "boolean":
+                yield "bool";
+            case "void":
+                yield "V";
+            default:
+                yield typeName;
         };
-
         return type;
     }
-
-
 }
