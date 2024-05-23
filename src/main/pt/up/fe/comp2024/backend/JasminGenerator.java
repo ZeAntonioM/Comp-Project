@@ -567,14 +567,21 @@ public class JasminGenerator {
             code.append(generators.apply(arg));
         }
 
-        var className = getImportedClass(((ClassType) callInst.getCaller().getType()).getName());
+        if (callInst.getCaller().getType().getTypeOfElement() == ElementType.ARRAYREF) {
 
-        code.append("new ").append(className).append(NL);
-        updateStack(-args.size()); // pop arguments
-        updateStack(1); // push object
+            code.append("newarray int").append(NL);
+            updateStack(-1); // pop size
+            updateStack(1); // push array reference
+
+        }
+        else {
+            var className = getImportedClass(((ClassType) callInst.getCaller().getType()).getName());
+            code.append("new ").append(className).append(NL);
+            updateStack(-args.size()); // pop arguments
+            updateStack(1); // push object
+        }
 
         return code.toString();
-
     }
     private String generatePutFieldInstruction(PutFieldInstruction putFieldInst) {
         var code = new StringBuilder();
