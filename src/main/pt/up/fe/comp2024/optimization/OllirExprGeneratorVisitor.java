@@ -79,9 +79,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         StringBuilder computation = new StringBuilder();
         StringBuilder code = new StringBuilder();
 
-        var tmp = OptUtils.getTemp();
+        var tmp = OptUtils.getTemp() + ".array.i32";
 
-        computation.append(tmp).append(".array.i32").append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
+        computation.append(tmp).append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
                 .append(jmmNode.getNumChildren()).append(".i32).array.i32").append(END_STMT);
 
         for (int i = 0; i < jmmNode.getNumChildren(); i++){
@@ -214,8 +214,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         for (var i = 1; i < node.getNumChildren(); i++){
             if (!checkVararg && !l.isEmpty() && l.get((i - 1) % l.size()).getType().getName().equals("vararg")) {
                 checkVararg = true;
-                varargTmp = OptUtils.getTemp();
-                computation.append(varargTmp).append(".array.i32").append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
+                varargTmp = OptUtils.getTemp() + ".array.i32";
+                computation.append(varargTmp).append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
                         .append(node.getNumChildren() - i).append(".i32).array.i32").append(END_STMT);
             }
             if (checkVararg) {
