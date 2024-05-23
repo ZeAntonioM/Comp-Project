@@ -58,18 +58,23 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var elseBody = jmmNode.getNumChildren() > 2 ? visit(jmmNode.getJmmChild(2)) : "";
 
         StringBuilder code = new StringBuilder();
+        var thenLabel = OptUtils.getTemp("THEN");
+        var elseLabel = OptUtils.getTemp("ELSE");
+        var endLabel = OptUtils.getTemp("END");
 
         code.append(condition.getComputation());
-        code.append("if (").append(condition.getCode()).append(") goto Then;\n");
-        code.append(jmmNode.getNumChildren() > 2 ? "goto Else;\n" : "goto End;\n");
-        code.append("Then: \n");
+        code.append("if (").append(condition.getCode()).append(") goto " + thenLabel + ";\n");
+        code.append(jmmNode.getNumChildren() > 2 ? "goto " + elseLabel + ";\n" : "goto " + endLabel + ";\n");
+        code.append(thenLabel).append(": \n");
         code.append(ifBody);
 
         if (jmmNode.getNumChildren() > 2) {
-            code.append("goto End;\n");
-            code.append("Else: \n");
+            code.append("goto " + endLabel + ";\n");
+            code.append(elseLabel).append(": \n");
             code.append(elseBody);
         }
+
+        code.append(endLabel).append(": \n");
 
         return code.toString();
     }
@@ -79,15 +84,18 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var body = visit(jmmNode.getJmmChild(1));
 
         StringBuilder code = new StringBuilder();
+        var loopLabel = OptUtils.getTemp("LOOP");
+        var bodyLabel = OptUtils.getTemp("BODY");
+        var endLabel = OptUtils.getTemp("ENDLOOP");
 
-        code.append("Loop: \n");
+        code.append(loopLabel).append(": \n");
         code.append(condition.getComputation());
-        code.append("if (").append(condition.getCode()).append(") goto Body;\n");
-        code.append("goto EndLoop;\n");
-        code.append("Body: \n");
+        code.append("if (").append(condition.getCode()).append(") goto " + bodyLabel + ";\n");
+        code.append("goto " + endLabel + ";\n");
+        code.append(bodyLabel).append(": \n");
         code.append(body);
-        code.append("goto Loop;\n");
-        code.append("EndLoop: \n");
+        code.append("goto " + loopLabel + ";\n");
+        code.append(endLabel).append(": \n");
 
         return code.toString();
     }
@@ -155,7 +163,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(lhs.getComputation());
         code.append(rhs.getComputation());
 
-        var leftName = node.getJmmChild(0).get("name");
+        var child = node.getJmmChild(0);
+        if (ARRAY_REF_EXPR.check(child)) child = child.getJmmChild(0);
+        var leftName = child.get("name");
 
         var classMethodParent = node;
 
