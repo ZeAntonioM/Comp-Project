@@ -30,7 +30,7 @@ public class OptUtils {
 
         String typeName = typeNode.get("name");
 
-        return toOllirType(typeName, Boolean.parseBoolean(typeNode.get("isArray")));
+        return toOllirType(typeName, Boolean.parseBoolean(typeNode.get("isArray")) || Boolean.parseBoolean(typeNode.get("isVararg")));
     }
 
     public static String toOllirType(Type type) {
