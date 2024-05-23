@@ -37,6 +37,8 @@ public class ArrayOperationsCheck extends AnalysisVisitor {
         var arrayType = array.get("type");
         var indexType = index.get("type");
 
+        arrayRefExpr.put("name", array.get("name"));
+
         if (arrayType != null && !(arrayType.equals("int[]") || arrayType.equals("vararg") || importSet.contains(arrayType))) {
             var message = String.format("Cannot perform array access on a non-array variable '%s'", array.get("name"));
             addReport(Report.newError(

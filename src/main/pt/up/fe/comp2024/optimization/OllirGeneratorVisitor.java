@@ -46,9 +46,52 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
         addVisit(EXPR_STMT, this::visitExprStmt);
         addVisit(RETURN_STMT, this::visitReturn);
+        addVisit(WHILE_STMT, this::visitWhileStmt);
+        addVisit(IF_ELSE_STMT, this::visitIfElseStmt);
 
         setDefaultVisit(this::defaultVisit);
     }
+
+    private String visitIfElseStmt(JmmNode jmmNode, Void unused) {
+        var condition = exprVisitor.visit(jmmNode.getJmmChild(0));
+        var ifBody = visit(jmmNode.getJmmChild(1));
+        var elseBody = jmmNode.getNumChildren() > 2 ? visit(jmmNode.getJmmChild(2)) : "";
+
+        StringBuilder code = new StringBuilder();
+
+        code.append(condition.getComputation());
+        code.append("if (").append(condition.getCode()).append(") goto Then;\n");
+        code.append(jmmNode.getNumChildren() > 2 ? "goto Else;\n" : "goto End;\n");
+        code.append("Then: \n");
+        code.append(ifBody);
+
+        if (jmmNode.getNumChildren() > 2) {
+            code.append("goto End;\n");
+            code.append("Else: \n");
+            code.append(elseBody);
+        }
+
+        return code.toString();
+    }
+
+    private String visitWhileStmt(JmmNode jmmNode, Void unused) {
+        var condition = exprVisitor.visit(jmmNode.getJmmChild(0));
+        var body = visit(jmmNode.getJmmChild(1));
+
+        StringBuilder code = new StringBuilder();
+
+        code.append("Loop: \n");
+        code.append(condition.getComputation());
+        code.append("if (").append(condition.getCode()).append(") goto Body;\n");
+        code.append("goto EndLoop;\n");
+        code.append("Body: \n");
+        code.append(body);
+        code.append("goto Loop;\n");
+        code.append("EndLoop: \n");
+
+        return code.toString();
+    }
+
     public String getClosestOccurrenceVariable(String variableName, String methodSignature) {
         if (variableName.equals("this")){
             return "class";
