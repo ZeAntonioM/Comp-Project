@@ -212,11 +212,13 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String varargTmp = "";
 
         for (var i = 1; i < node.getNumChildren(); i++){
-            if (!checkVararg && !l.isEmpty() && l.get((i - 1) % l.size()).getType().getName().equals("vararg")) {
-                checkVararg = true;
-                varargTmp = OptUtils.getTemp() + ".array.i32";
-                computation.append(varargTmp).append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
-                        .append(node.getNumChildren() - i).append(".i32).array.i32").append(END_STMT);
+            if (!l.isEmpty() && i - 1 < l.size()){
+                if (!checkVararg && l.get(i - 1).getType().getName().equals("vararg")) {
+                    checkVararg = true;
+                    varargTmp = OptUtils.getTemp() + ".array.i32";
+                    computation.append(varargTmp).append(SPACE).append(ASSIGN).append(".array.i32").append(SPACE).append("new(array,").append(SPACE)
+                            .append(node.getNumChildren() - i).append(".i32).array.i32").append(END_STMT);
+                }
             }
             if (checkVararg) {
                 var child = visit(node.getJmmChild(i));
