@@ -392,9 +392,10 @@ public class JasminGenerator {
                 updateStack(-2); // pop two values
                 updateStack(1); // push result
                 break;
-            case AND:
-                // TODO make this branched
+            case AND:\
                 op.append("iand ");
+                updateStack(-2); // pop two values
+                updateStack(1); // push result
                 break;
             case LTH:
                 op.append("isub ").append(NL);
