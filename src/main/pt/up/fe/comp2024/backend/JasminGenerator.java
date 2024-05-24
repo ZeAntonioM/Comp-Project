@@ -163,7 +163,6 @@ public class JasminGenerator {
 
         code.append(")").append(returnType).append(NL);
 
-
         var methodBody = new StringBuilder();
         for (var inst : method.getInstructions()) {
 
@@ -198,9 +197,13 @@ public class JasminGenerator {
             methodBody.append(TAB).append("return").append(NL);
         }
 
+        int l = method.getVarTable().size();
+        if (!method.getVarTable().containsKey("this")) l++;
+
         // Add limits
         code.append(TAB).append(".limit stack ").append(maxStack).append(NL);
-        code.append(TAB).append(".limit locals ").append(locals+1).append(NL);
+        //code.append(TAB).append(".limit locals ").append(locals+1).append(NL);
+        code.append(TAB).append(".limit locals ").append(l).append(NL);
         code.append(methodBody);
         code.append(".end method\n");
 
