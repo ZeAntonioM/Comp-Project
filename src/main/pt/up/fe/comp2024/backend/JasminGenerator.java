@@ -4,6 +4,7 @@ import com.sun.jdi.ObjectReference;
 import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.parser.OllirParser;
 import org.specs.comp.ollir.tree.TreeNode;
+import org.w3c.dom.css.CSSImportRule;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.ollir.OllirUtils;
 import pt.up.fe.comp.jmm.report.Report;
@@ -212,11 +213,15 @@ public class JasminGenerator {
     private String generateAssign(AssignInstruction assign) {
         var code = new StringBuilder();
 
-        // generate code for loading what's on the right
-        code.append(generators.apply(assign.getRhs()));
-
         // store value in the stack in destination
         var lhs = assign.getDest();
+
+        if (lhs instanceof ArrayOperand) {
+            return generateArrayAssign(assign);
+        }
+
+        // generate code for loading what's on the right
+        code.append(generators.apply(assign.getRhs()));
 
         if (!(lhs instanceof Operand)) {
             throw new NotImplementedException(lhs.getClass());
@@ -229,16 +234,43 @@ public class JasminGenerator {
         updateLocals(reg);
 
         var str = reg < 4 ? "_" + reg : " " + reg + NL;
-
         var type = assign.getTypeOfAssign().getTypeOfElement();
-
         switch (type) {
             case INT32, BOOLEAN -> code.append("istore").append(str);
             case STRING, ARRAYREF, OBJECTREF -> code.append("astore").append(str);
             default -> throw new NotImplementedException(operand.getType().getTypeOfElement());
         };
-        updateStack(-1);
+
+        updateStack(-1); // pop value
         return code.toString();
+    }
+
+    private String generateArrayAssign(AssignInstruction assign) {
+
+        // The correct order for iastore is arrayref, index and value, so we need to load the arrayref first
+        var code = new StringBuilder();
+
+        var operand = (Operand) assign.getDest();
+
+        // arrayRef
+        var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+        updateLocals(reg);
+        code.append("aload").append(reg < 4 ? "_" + reg : " " + reg).append(NL);
+        updateStack(1); // push array reference
+
+        //get index
+        var array = (ArrayOperand) assign.getDest();
+        code.append(generators.apply( array.getIndexOperands().get(0) ));
+
+        //get value
+        code.append(generators.apply(assign.getRhs()));
+
+        code.append("iastore").append(NL);
+        updateStack(-3); // pop array reference, index and value
+
+
+        return code.toString();
+
     }
 
     private String generateSingleOp(SingleOpInstruction singleOp) {
@@ -278,6 +310,10 @@ public class JasminGenerator {
 
     private String generateOperand(Operand operand) {
 
+        if (operand instanceof ArrayOperand) {
+            return generateArrayOperand(operand);
+        }
+
         var code = new StringBuilder();
 
         // get register
@@ -290,17 +326,40 @@ public class JasminGenerator {
             case THIS:
                 code.append("aload_0").append(NL);
                 break;
-            case OBJECTREF, ARRAYREF, STRING:
+            case OBJECTREF, STRING,ARRAYREF:
                 code.append("aload").append(str).append(NL);
                 break;
             case INT32, BOOLEAN:
                 code.append("iload").append(str).append(NL);
                 break;
+
         }
 
         return code.toString();
 
+    }
 
+    private String generateArrayOperand(Operand operand) {
+
+            var code = new StringBuilder();
+
+            // get register
+            var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+            updateLocals(reg);
+            updateStack(1); // push arrayRef to stack
+            String str = reg < 4 ? "_" + reg : " " + reg;
+            code.append("aload").append(str).append(NL);
+            updateStack(1);
+
+            // get Index
+            var array = (ArrayOperand) operand;
+            code.append(generators.apply(array.getIndexOperands().get(0)));
+
+            code.append("iaload").append(NL);
+            updateStack(-2); // pop array reference and index
+            updateStack(1); // push value
+
+            return code.toString();
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -617,6 +676,10 @@ public class JasminGenerator {
         updateStack(-1); // pop object reference
         updateStack(1); // push value
 
+        if (getFieldInst.getField().getType().getTypeOfElement() == ElementType.ARRAYREF) {
+            code.append("[I").append(NL);
+            return code.toString();
+        }
         code.append(getType(getFieldInst.getField().getType())).append(NL);
 
         return code.toString();
