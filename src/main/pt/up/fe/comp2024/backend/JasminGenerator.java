@@ -197,13 +197,9 @@ public class JasminGenerator {
             methodBody.append(TAB).append("return").append(NL);
         }
 
-        int l = method.getVarTable().size();
-        if (!method.getVarTable().containsKey("this")) l++;
-
         // Add limits
         code.append(TAB).append(".limit stack ").append(maxStack).append(NL);
-        //code.append(TAB).append(".limit locals ").append(locals+1).append(NL);
-        code.append(TAB).append(".limit locals ").append(l).append(NL);
+        code.append(TAB).append(".limit locals ").append(locals+1).append(NL);
         code.append(methodBody);
         code.append(".end method\n");
 
@@ -448,7 +444,7 @@ public class JasminGenerator {
                 updateStack(-2); // pop two values
                 updateStack(1); // push result
                 break;
-            case AND:
+            case ANDB:
                 op.append("iand ");
                 updateStack(-2); // pop two values
                 updateStack(1); // push result
