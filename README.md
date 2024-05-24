@@ -14,10 +14,15 @@
 
 ## Self-Assessment
 
-- We are confident that our project deserves a 20/20 score. We have successfully implemented all functionalities required for the compiler to operate as intended and optimized how it performs on its different stages.
+- We are confident that our project deserves a 19/20 score. We have successfully implemented almost all functionalities required for the compiler to operate as intended and optimized how it performs on its different stages.
+
+## Jasmin Optimizations
+- iinc optimization;
+- iload, istore, astore, aload optimization;
+- load constant optimization;
+- if optimization using iflt, ifne, etc...;
 
 ## Optimizations done
-
 ### Option "-o"
 - Constant folding;
 - Constant propagation;
