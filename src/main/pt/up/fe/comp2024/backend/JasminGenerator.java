@@ -216,11 +216,64 @@ public class JasminGenerator {
         // store value in the stack in destination
         var lhs = assign.getDest();
 
+        // Array assignment
         if (lhs instanceof ArrayOperand) {
             return generateArrayAssign(assign);
         }
 
-        // generate code for loading what's on the right
+        // Use of iinc
+        if (assign.getRhs() instanceof BinaryOpInstruction) {
+            var rhs = (BinaryOpInstruction) assign.getRhs();
+            var operation = rhs.getOperation().getOpType();
+
+            // Can only use iinc if the operation is add or sub
+            if (operation == OperationType.ADD || operation == OperationType.SUB) {
+
+                var reg = 0;
+                var literal = "";
+
+                // we need to check the two different cases: lhs = lhs + literal and lhs = literal + lhs
+                if (rhs.getLeftOperand() instanceof Operand) {
+                    var leftOperand = (Operand) rhs.getLeftOperand();
+
+                    // Check if name is the same as the operand on assign: lhs = lhs + literal
+                    if (leftOperand.getName().equals(((Operand) lhs).getName())) {
+                        reg = currentMethod.getVarTable().get(leftOperand.getName()).getVirtualReg();
+                        updateLocals(reg);
+
+                        // We need to check if the right operand is a literal, otherwise we can't use iinc
+                        if (rhs.getRightOperand() instanceof LiteralElement) {
+                            literal = ((LiteralElement) rhs.getRightOperand()).getLiteral();
+
+                        }
+                    }
+                }
+
+                if (rhs.getRightOperand() instanceof Operand) {
+                    var rightOperand = (Operand) rhs.getRightOperand();
+
+                    // Check if name is the same as the operand on assign: lhs = literal + lhs
+                    if (rightOperand.getName().equals(((Operand) lhs).getName())) {
+                        reg = currentMethod.getVarTable().get(rightOperand.getName()).getVirtualReg();
+                        updateLocals(reg);
+
+                        // We need to check if the left operand is a literal, otherwise we can't use iinc
+                        if (rhs.getLeftOperand() instanceof LiteralElement) {
+                            literal = ((LiteralElement) rhs.getLeftOperand()).getLiteral();
+                        }
+                    }
+                }
+
+                // If we have a register and a literal, we can use iinc
+                if (reg != 0 && !literal.isEmpty()) {
+                    var isNeg = operation == OperationType.SUB ? "-" : "";
+                    code.append("iinc ").append(reg).append(" ").append(isNeg).append(literal).append(NL);
+                    return code.toString();
+                }
+            }
+        }
+
+        // If not array assignment, nor iinc, we need to generate the code for the right side
         code.append(generators.apply(assign.getRhs()));
 
         if (!(lhs instanceof Operand)) {
@@ -392,7 +445,7 @@ public class JasminGenerator {
                 updateStack(-2); // pop two values
                 updateStack(1); // push result
                 break;
-            case AND:\
+            case AND:
                 op.append("iand ");
                 updateStack(-2); // pop two values
                 updateStack(1); // push result
@@ -519,6 +572,10 @@ public class JasminGenerator {
 
         code.append(generators.apply((Operand) callInst.getCaller()));
 
+        for (var arg : args) {
+            code.append(generators.apply(arg));
+        }
+
         code.append("invokespecial ");
 
 
@@ -539,10 +596,24 @@ public class JasminGenerator {
             code.append(className);
         }
 
-        code.append("/<init>()");
+        // Need to check if the method is a constructor
+        var method = callInst.getMethodName();
+        if (method instanceof LiteralElement) {
+            var literal = ((LiteralElement) method).getLiteral().replace("\"", "");
+            code.append("/").append(literal);
+
+            code.append("(");
+            for (var arg: args) {
+                code.append(getType(arg.getType()));
+            }
+            code.append(")");
+
+        }
+        else { code.append("/<init>()"); }
 
         code.append(getType(callInst.getReturnType())).append(NL);
 
+        updateStack(-args.size());
         updateStack(-1); // pop caller
         if (callInst.getReturnType().getTypeOfElement() != ElementType.VOID) {
             updateStack(1); // push return value
